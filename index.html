@@ -167,38 +167,27 @@ button.pick:hover{border-color:var(--accent)}
 </section>
 </main>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 (function(){
-var DEF=[
-["💬","Messenger","친구들과 채팅하기",""],["🎵","Music","음악을 재생하고 관리하기",""],
-["🗺️","NolMap","놀맵",""],["🎧","JPlayer","음악 플레이어",""],
-["📰","Edu","어린이 뉴스와 신문",""],["💡","Gifted","영재원 산출물 계획",""],
-["🤖","ZETA","AI 서비스",""],["📱","PhoneWiki","스마트폰 사양 검색과 비교",""],
-["📍","FindPlace","우리 동네 숨겨진 장소 찾기",""],["📚","SurviveInSchool","시간표, 숙제, 준비물 관리",""],
-["🎲","RandomChoice","룰렛, 제비뽑기, 팀 나누기",""]
-].map(function(a,k){return{id:"d"+k,i:a[0],n:a[1],d:a[2],u:a[3]}});
+// ▼ Supabase 프로젝트 설정 (Project URL 과 anon(공개) 키만 넣으세요. service_role / secret 키는 절대 넣지 마세요)
+var SUPABASE_URL="https://qbknoxfqlxwokkwqvqdy.supabase.co";
+var SUPABASE_ANON_KEY="sb_publishable_kFddLg0u86eE2IWGL0N8Fg_PUkkh7K2";
+// ▲
+var READY=SUPABASE_URL.indexOf("http")===0&&SUPABASE_ANON_KEY.indexOf("여기에")!==0;
+var OPT={auth:{persistSession:false,autoRefreshToken:true,detectSessionInUrl:false}};  // 로그인 저장 안 함
+var sb=READY?supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY,OPT):null;
 
-// 이메일/비밀번호 원문은 코드에 없음. 솔트가 들어간 PBKDF2 해시만 저장.
-var BASE={s:"60197cd4538217881048559a16015beb",h:"f1c9801101821121d93478453429472e2ce369b21ec6b33926fb855425d78816"};
-var ITER=200000;
-var authed=false;           // 메모리에만 존재 → 새로고침하면 로그아웃
-var fails=0,lockUntil=0;
-
+var apps=[],notices=[],inqs=[],editing=-1,selApp=null,authed=false,timer=null,fails=0,lockUntil=0,lastSend=0;
 function $(id){return document.getElementById(id)}
-function load(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}}
-function save(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
-function hex(b){return Array.prototype.map.call(new Uint8Array(b),function(x){return("0"+x.toString(16)).slice(-2)}).join("")}
-function unhex(s){var a=new Uint8Array(s.length/2);for(var i=0;i<a.length;i++)a[i]=parseInt(s.substr(i*2,2),16);return a}
-async function hash(email,pw,salt){
-  var enc=new TextEncoder();
-  var key=await crypto.subtle.importKey("raw",enc.encode(email.trim().toLowerCase()+"\n"+pw),"PBKDF2",false,["deriveBits"]);
-  var bits=await crypto.subtle.deriveBits({name:"PBKDF2",hash:"SHA-256",salt:unhex(salt),iterations:ITER},key,256);
-  return hex(bits);
+function mk(tag,cls,txt){var e=document.createElement(tag);if(cls)e.className=cls;if(txt!==undefined)e.textContent=txt;return e}
+function field(ph,val,label){var i=document.createElement("input");i.placeholder=ph;i.value=val;i.setAttribute("aria-label",label);return i}
+function chk(r){if(r.error)throw r.error;return r.data}
+function lost(e,el){
+  if(authed&&e&&(e.status===401||/jwt/i.test(e.message||""))){authed=false;route();return}
+  el.textContent="처리하지 못했어요. 연결과 권한을 확인해 주세요.";
 }
-
-var apps=load("tj_apps",null)||DEF;
-function norm(){apps.forEach(function(a,k){if(!a.id)a.id="d"+k})}
-norm();save("tj_apps",apps);
+async function run(q,el){try{chk(await q);el.textContent="";return true}catch(e){lost(e,el);return false}}
 function normUrl(u){
   u=(u||"").trim();
   if(!u)return "";
@@ -208,77 +197,24 @@ function normUrl(u){
   return "https://"+u;
 }
 function safeUrl(u){return normUrl(u)||"#"}
+function today(){var d=new Date();return d.getFullYear()+"-"+("0"+(d.getMonth()+1)).slice(-2)+"-"+("0"+d.getDate()).slice(-2)}
+function mapApp(r){return{id:r.id,i:r.icon,n:r.name,d:r.description,u:r.url,p:r.position}}
+function sortedNotices(){return notices.slice().sort(function(a,b){return a.date<b.date?1:a.date>b.date?-1:b.ts-a.ts})}
 
+/* 홈 */
 function renderHome(){
   var g=$("grid");g.textContent="";
   apps.forEach(function(a){
-    var el=document.createElement("a");el.className="card";el.href=safeUrl(a.u);
-    var ic=document.createElement("div");ic.className="ic";ic.textContent=a.i;
-    var tx=document.createElement("div");tx.className="tx";
-    var b=document.createElement("b");b.textContent=a.n;
-    var s=document.createElement("span");s.textContent=a.d;
-    tx.appendChild(b);tx.appendChild(s);
-    var go=document.createElement("div");go.className="go";go.textContent="›";
-    el.appendChild(ic);el.appendChild(tx);el.appendChild(go);g.appendChild(el);
+    var el=mk("a","card");el.href=safeUrl(a.u);
+    var tx=mk("div","tx");tx.appendChild(mk("b","",a.n));tx.appendChild(mk("span","",a.d));
+    el.appendChild(mk("div","ic",a.i));el.appendChild(tx);el.appendChild(mk("div","go","›"));g.appendChild(el);
   });
-  var so=document.createElement("div");so.className="soon";
+  var so=mk("div","soon");
   so.innerHTML='<div class="ic">＋</div><div class="tx"><b>Coming Soon</b><span>새로운 서비스가 추가될 예정입니다</span></div>';
   g.appendChild(so);
 }
 
-var editing=-1;
-function mk(tag,cls,txt){var e=document.createElement(tag);if(cls)e.className=cls;if(txt!==undefined)e.textContent=txt;return e}
-function field(ph,val,label){var i=document.createElement("input");i.placeholder=ph;i.value=val;i.setAttribute("aria-label",label);return i}
-function renderAdmin(){
-  var l=$("alist");l.textContent="";
-  apps.forEach(function(a,idx){
-    var r=mk("div","row");
-    if(idx===editing){
-      r.className="row edit";
-      var wrap=mk("div","editbox");
-      var two=mk("div","two");
-      var fi=field("🙂",a.i,"아이콘");fi.maxLength=4;
-      var fn=field("앱 이름",a.n,"앱 이름");
-      two.appendChild(fi);two.appendChild(fn);
-      var fd=field("설명",a.d,"설명");
-      var fu=field("주소 (예: example.com)",a.u,"주소");
-      var err=mk("div","err");
-      var btns=mk("div","btns");
-      var sv=mk("button","","저장");
-      sv.onclick=function(){
-        var n=fn.value.trim(),u=fu.value.trim();
-        if(!n){err.textContent="앱 이름을 입력해 주세요.";return}
-        u=normUrl(u);if(u===null){err.textContent="사용할 수 없는 주소입니다.";return}
-        apps[idx]={id:a.id,i:fi.value.trim()||"🧩",n:n,d:fd.value.trim(),u:u};
-        saveApps();editing=-1;renderAdmin();renderHome();
-      };
-      var cn=mk("button","ghost","취소");
-      cn.onclick=function(){editing=-1;renderAdmin()};
-      btns.appendChild(sv);btns.appendChild(cn);
-      wrap.appendChild(two);wrap.appendChild(fd);wrap.appendChild(fu);wrap.appendChild(err);wrap.appendChild(btns);
-      r.appendChild(wrap);
-    }else{
-      var tx=mk("div","tx");
-      tx.appendChild(mk("b","",a.n));
-      tx.appendChild(mk("span","",a.d));
-      if(a.u)tx.appendChild(mk("span","url",a.u));
-      var ed=mk("button","ghost sm","수정");
-      ed.onclick=function(){editing=idx;renderAdmin()};
-      var d=mk("button","del","빼기");
-      d.onclick=function(){if(confirm(a.n+" 앱을 뺄까요?")){apps.splice(idx,1);editing=-1;saveApps();renderAdmin();renderHome()}};
-      r.appendChild(mk("div","ic",a.i));r.appendChild(tx);r.appendChild(ed);r.appendChild(d);
-    }
-    l.appendChild(r);
-  });
-}
-
-var notices=load("tj_notices",[]);
-function today(){var d=new Date();return d.getFullYear()+"-"+("0"+(d.getMonth()+1)).slice(-2)+"-"+("0"+d.getDate()).slice(-2)}
-function sortedNotices(){return notices.slice().sort(function(a,b){return a.date<b.date?1:a.date>b.date?-1:b.ts-a.ts})}
-function saveNotices(){
-  save("tj_notices",notices);
-  if(dbh){dbh.doc("site/notices").set({list:notices}).catch(function(){$("nerr").textContent="서버에 저장하지 못했어요. 이 계정에 쓰기 권한이 있는지 확인해 주세요."})}
-}
+/* 공지 */
 function renderNotices(){
   var box=$("nlist");box.textContent="";
   var list=sortedNotices();
@@ -290,9 +226,7 @@ function renderNotices(){
       grp.appendChild(mk("h2","",new Date(n.date+"T00:00:00").toLocaleDateString("ko-KR",{year:"numeric",month:"long",day:"numeric",weekday:"short"})));
       box.appendChild(grp);
     }
-    var c=mk("div","row note");
-    c.appendChild(mk("b","",n.title));c.appendChild(mk("p","",n.body));
-    grp.appendChild(c);
+    var c=mk("div","row note");c.appendChild(mk("b","",n.title));c.appendChild(mk("p","",n.body));grp.appendChild(c);
   });
 }
 function renderNoticeAdmin(){
@@ -300,53 +234,68 @@ function renderNoticeAdmin(){
   var list=sortedNotices();
   if(!list.length){box.appendChild(mk("div","muted","등록된 공지가 없어요."));return}
   list.forEach(function(n){
-    var r=mk("div","row"),tx=mk("div","tx");
-    tx.appendChild(mk("b","",n.title));tx.appendChild(mk("span","",n.date));
+    var r=mk("div","row"),tx=mk("div","tx");tx.appendChild(mk("b","",n.title));tx.appendChild(mk("span","",n.date));
     var d=mk("button","del","삭제");
-    d.onclick=function(){if(confirm("이 공지를 삭제할까요?")){notices=notices.filter(function(x){return x.id!==n.id});saveNotices();renderNoticeAdmin();renderNotices()}};
+    d.onclick=async function(){
+      if(!confirm("이 공지를 삭제할까요?"))return;
+      await run(sb.from("notices").delete().eq("id",n.id),$("nerr"));await refresh();
+    };
     r.appendChild(tx);r.appendChild(d);box.appendChild(r);
   });
 }
-$("nadd").onclick=function(){
+$("nadd").onclick=async function(){
   var t=$("ntitle").value.trim(),b=$("nbody").value.trim(),d=$("ndate").value||today();
   $("nerr").textContent="";
   if(!t||!b){$("nerr").textContent="제목과 내용을 입력해 주세요.";return}
-  notices.push({id:"n"+Date.now().toString(36)+Math.random().toString(36).slice(2,5),date:d,title:t,body:b,ts:Date.now()});
-  saveNotices();$("ntitle").value=$("nbody").value="";$("ndate").value=today();
-  renderNoticeAdmin();renderNotices();
+  if(await run(sb.from("notices").insert({date:d,title:t,body:b}),$("nerr"))){$("ntitle").value=$("nbody").value="";$("ndate").value=today()}
+  await refresh();
 };
-var dbh=null,inqs=[],inqUnsub=null,selApp=null,lastSend=0;
-function saveApps(){
-  save("tj_apps",apps);
-  if(dbh){dbh.doc("site/apps").set({list:apps}).catch(function(){$("aerr").textContent="서버에 저장하지 못했어요. 이 계정에 쓰기 권한이 있는지 확인해 주세요."})}
-}
-function getInqs(){return dbh?inqs:load("tj_inq",[])}
-function renderInq(){
-  var box=$("ilist");box.textContent="";
-  var list=getInqs().slice().sort(function(x,y){return y.ts-x.ts});
-  $("icount").textContent="("+list.length+"건)";
-  if(!list.length){box.appendChild(mk("div","muted","아직 받은 문의가 없어요."));return}
-  list.forEach(function(q){
-    var cur=apps.filter(function(a){return a.id===q.appId})[0];
-    var r=mk("div","row inq"),h=mk("div","ihead");
-    h.appendChild(mk("b","",cur?cur.n:q.appName+" (삭제된 앱)"));
-    h.appendChild(mk("span","muted",(q.name||"익명")+" · "+new Date(q.ts).toLocaleString("ko-KR")));
-    r.appendChild(h);r.appendChild(mk("p","imsg",q.msg));
-    var d=mk("button","del","삭제");
-    d.onclick=function(){
-      if(!confirm("이 문의를 삭제할까요?"))return;
-      if(dbh){dbh.collection("inquiries").doc(q.id).delete().catch(function(){$("ierr").textContent="삭제하지 못했어요."})}
-      else{save("tj_inq",load("tj_inq",[]).filter(function(x){return x.id!==q.id}));renderInq()}
-    };
-    r.appendChild(d);box.appendChild(r);
+
+/* 앱 관리 */
+function renderAdmin(){
+  var l=$("alist");l.textContent="";
+  apps.forEach(function(a,idx){
+    var r=mk("div","row");
+    if(idx===editing){
+      r.className="row edit";
+      var wrap=mk("div","editbox"),two=mk("div","two");
+      var fi=field("🙂",a.i,"아이콘");fi.maxLength=4;
+      var fn=field("앱 이름",a.n,"앱 이름");two.appendChild(fi);two.appendChild(fn);
+      var fd=field("설명",a.d,"설명"),fu=field("주소 (예: example.com)",a.u,"주소");
+      var err=mk("div","err"),btns=mk("div","btns"),sv=mk("button","","저장");
+      sv.onclick=async function(){
+        var n=fn.value.trim(),u=normUrl(fu.value);
+        if(!n){err.textContent="앱 이름을 입력해 주세요.";return}
+        if(u===null){err.textContent="사용할 수 없는 주소입니다.";return}
+        if(await run(sb.from("apps").update({icon:fi.value.trim()||"🧩",name:n,description:fd.value.trim(),url:u}).eq("id",a.id),err)){editing=-1;await refresh()}
+      };
+      var cn=mk("button","ghost","취소");cn.onclick=function(){editing=-1;renderAdmin()};
+      btns.appendChild(sv);btns.appendChild(cn);
+      [two,fd,fu,err,btns].forEach(function(x){wrap.appendChild(x)});r.appendChild(wrap);
+    }else{
+      var tx=mk("div","tx");tx.appendChild(mk("b","",a.n));tx.appendChild(mk("span","",a.d));
+      if(a.u)tx.appendChild(mk("span","url",a.u));
+      var ed=mk("button","ghost sm","수정");ed.onclick=function(){editing=idx;renderAdmin()};
+      var d=mk("button","del","빼기");
+      d.onclick=async function(){
+        if(!confirm(a.n+" 앱을 뺄까요?"))return;
+        await run(sb.from("apps").delete().eq("id",a.id),$("aerr"));editing=-1;await refresh();
+      };
+      r.appendChild(mk("div","ic",a.i));r.appendChild(tx);r.appendChild(ed);r.appendChild(d);
+    }
+    l.appendChild(r);
   });
 }
-function subInq(){
-  if(!dbh||inqUnsub)return;
-  try{inqUnsub=dbh.collection("inquiries").onSnapshot(function(s){
-    inqs=s.docs.map(function(d){var x=d.data();x.id=d.id;return x});$("ierr").textContent="";renderInq();
-  },function(){$("ierr").textContent="문의를 읽을 권한이 없어요. 페이지 주인 계정으로 열어 주세요."})}catch(e){}
-}
+$("addapp").onclick=async function(){
+  var n=$("nn").value.trim(),i=$("ni").value.trim()||"🧩",d=$("nd").value.trim(),u=normUrl($("nu").value);
+  if(!n){$("aerr").textContent="앱 이름을 입력해 주세요.";return}
+  if(u===null){$("aerr").textContent="사용할 수 없는 주소입니다.";return}
+  var pos=apps.reduce(function(m,a){return Math.max(m,a.p||0)},-1)+1;
+  if(await run(sb.from("apps").insert({icon:i,name:n,description:d,url:u,position:pos}),$("aerr"))){$("nn").value=$("ni").value=$("nd").value=$("nu").value=""}
+  await refresh();
+};
+
+/* 문의 */
 function renderInquiry(){
   if(selApp)selApp=apps.filter(function(a){return a.id===selApp.id})[0]||null;
   var g=$("ipg");g.textContent="";
@@ -356,8 +305,7 @@ function renderInquiry(){
   }
   $("iform").classList.add("hide");$("ipick").classList.remove("hide");
   apps.forEach(function(a){
-    var b=mk("button","pick");
-    var tx=mk("div","tx");tx.appendChild(mk("b","",a.n));tx.appendChild(mk("span","",a.d));
+    var b=mk("button","pick"),tx=mk("div","tx");tx.appendChild(mk("b","",a.n));tx.appendChild(mk("span","",a.d));
     b.appendChild(mk("div","ic",a.i));b.appendChild(tx);b.appendChild(mk("div","go","›"));
     b.onclick=function(){selApp=a;$("iok").textContent=$("ierr2").textContent="";renderInquiry()};
     g.appendChild(b);
@@ -367,87 +315,111 @@ $("iback").onclick=function(){selApp=null;renderInquiry()};
 $("isend").onclick=async function(){
   var msg=$("itext").value.trim();
   $("iok").textContent=$("ierr2").textContent="";
-  if(!selApp)return;
+  if(!selApp||!sb)return;
   if(!msg){$("ierr2").textContent="문의 내용을 입력해 주세요.";return}
   if(Date.now()-lastSend<10000){$("ierr2").textContent="잠시 후 다시 보내 주세요.";return}
-  var q={appId:selApp.id,appName:selApp.n,name:$("iname").value.trim().slice(0,30),msg:msg.slice(0,1000),ts:Date.now()};
-  try{
-    if(dbh)await dbh.collection("inquiries").add(q);
-    else{var l=load("tj_inq",[]);q.id="q"+Date.now().toString(36)+Math.random().toString(36).slice(2,6);l.push(q);save("tj_inq",l)}
-    lastSend=Date.now();$("itext").value="";$("iok").textContent="문의가 접수되었어요. 감사합니다!";
-  }catch(e){$("ierr2").textContent="문의를 보내지 못했어요. 잠시 후 다시 시도해 주세요."}
+  var ok=await run(sb.from("inquiries").insert({app_id:selApp.id,app_name:selApp.n,name:$("iname").value.trim().slice(0,30),message:msg.slice(0,1000)}),$("ierr2"));
+  if(ok){lastSend=Date.now();$("itext").value="";$("iok").textContent="문의가 접수되었어요. 감사합니다!"}
 };
-if(window.claude&&claude.use){claude.use("db").then(function(db){
-  if(!db)return;dbh=db;
-  db.doc("site/apps").onSnapshot(function(s){
-    var d=s.exists&&s.data();
-    if(d&&Array.isArray(d.list)){apps=d.list;norm();renderHome();renderInquiry();if(authed&&editing<0)renderAdmin();if(authed)renderInq()}
-  },function(){});
-  db.doc("site/notices").onSnapshot(function(s){
-    var d=s.exists&&s.data();
-    if(d&&Array.isArray(d.list)){notices=d.list;renderNotices();if(authed)renderNoticeAdmin()}
-  },function(){});
-  if(authed)subInq();
-}).catch(function(){})}
-
-function route(){
-  var h=location.hash;
-  ["home","login","admin","inquiry","notice"].forEach(function(id){$(id).classList.add("hide")});
-  if(h==="#/admin"){
-    if(authed){$("admin").classList.remove("hide");renderAdmin();renderInq();subInq();$("ndate").value=today();renderNoticeAdmin()}
-    else{$("login").classList.remove("hide");$("em").value="";$("pw").value="";$("lerr").textContent=""}
-  }else if(h==="#/notice"){$("notice").classList.remove("hide");renderNotices()}
-  else if(h==="#/inquiry"){$("inquiry").classList.remove("hide");selApp=null;renderInquiry()}
-  else{$("home").classList.remove("hide")}
-  window.scrollTo(0,0);
+function renderInq(){
+  var box=$("ilist");box.textContent="";
+  $("icount").textContent="("+inqs.length+"건)";
+  if(!inqs.length){box.appendChild(mk("div","muted","아직 받은 문의가 없어요."));return}
+  inqs.forEach(function(q){
+    var cur=apps.filter(function(a){return a.id===q.appId})[0];
+    var r=mk("div","row inq"),h=mk("div","ihead");
+    h.appendChild(mk("b","",cur?cur.n:q.appName+" (삭제된 앱)"));
+    h.appendChild(mk("span","muted",(q.name||"익명")+" · "+new Date(q.ts).toLocaleString("ko-KR")));
+    r.appendChild(h);r.appendChild(mk("p","imsg",q.msg));
+    var d=mk("button","del","삭제");
+    d.onclick=async function(){
+      if(!confirm("이 문의를 삭제할까요?"))return;
+      await run(sb.from("inquiries").delete().eq("id",q.id),$("ierr"));await loadInqs();
+    };
+    r.appendChild(d);box.appendChild(r);
+  });
 }
-window.addEventListener("hashchange",function(){
-  // 어드민 화면을 벗어나면 로그아웃 → 들어갈 때마다 로그인 창
-  if(location.hash!=="#/admin"){authed=false;if(inqUnsub){inqUnsub();inqUnsub=null}}
-  route();
-});
+async function loadInqs(){
+  if(!authed)return;
+  try{
+    inqs=chk(await sb.from("inquiries").select("*").order("created_at",{ascending:false})).map(function(r){return{id:r.id,appId:r.app_id,appName:r.app_name,name:r.name,msg:r.message,ts:Date.parse(r.created_at)}});
+    $("ierr").textContent="";renderInq();
+  }catch(e){lost(e,$("ierr"))}
+}
 
+/* 최신 데이터 불러오기 (다른 기기의 변경 반영) */
+async function refresh(){
+  if(!sb){$("grid").textContent="";$("grid").appendChild(mk("div","muted","index.html 맨 위의 Supabase URL과 키를 먼저 넣어 주세요."));return}
+  try{
+    apps=chk(await sb.from("apps").select("*").order("position").order("created_at")).map(mapApp);
+    notices=chk(await sb.from("notices").select("*")).map(function(r){return{id:r.id,date:r.date,title:r.title,body:r.body,ts:Date.parse(r.created_at)}});
+    renderHome();renderNotices();
+    if(!$("inquiry").classList.contains("hide"))renderInquiry();
+    if(authed){if(editing<0)renderAdmin();renderNoticeAdmin();renderInq()}
+  }catch(e){if(!apps.length){$("grid").textContent="";$("grid").appendChild(mk("div","muted","데이터를 불러오지 못했어요."))}}
+}
+
+/* 로그인 / 로그아웃 */
+function leaveAdmin(){
+  if(authed){authed=false;editing=-1;if(sb)sb.auth.signOut()}
+  clearInterval(timer);timer=null;
+}
 $("lf").addEventListener("submit",async function(e){
   e.preventDefault();
+  var em=$("em").value,pw=$("pw").value;
+  $("em").value="";$("pw").value="";
+  if(!sb){$("lerr").textContent="Supabase 설정이 필요해요.";return}
   var now=Date.now();
   if(now<lockUntil){$("lerr").textContent="잠시 후 다시 시도해 주세요. ("+Math.ceil((lockUntil-now)/1000)+"초)";return}
-  var em=$("em").value,pw=$("pw").value,ok=false;
-  $("em").value="";$("pw").value="";
-  var accts=[BASE].concat(load("tj_admins",[]));
-  for(var i=0;i<accts.length;i++){
-    try{if(await hash(em,pw,accts[i].s)===accts[i].h)ok=true}catch(x){}
-  }
+  var ok=false;
+  try{
+    var r=await sb.auth.signInWithPassword({email:em.trim(),password:pw});
+    if(!r.error){
+      var a=await sb.from("admins").select("user_id").maybeSingle();
+      if(a.data)ok=true;else await sb.auth.signOut();
+    }
+  }catch(x){}
   em=pw="";
   if(ok){fails=0;authed=true;route()}
   else{fails++;$("lerr").textContent="이메일 또는 비밀번호가 올바르지 않습니다.";if(fails>=5){lockUntil=Date.now()+30000;fails=0}}
 });
-
-$("logout").onclick=function(){authed=false;editing=-1;location.hash="#/"};
-$("home2").onclick=function(){authed=false;location.hash="#/"};
-
-$("addapp").onclick=function(){
-  var n=$("nn").value.trim(),i=$("ni").value.trim()||"🧩",d=$("nd").value.trim(),u=$("nu").value.trim();
-  if(!n){$("aerr").textContent="앱 이름을 입력해 주세요.";return}
-  u=normUrl(u);if(u===null){$("aerr").textContent="사용할 수 없는 주소입니다.";return}
-  apps.push({id:"a"+Date.now().toString(36)+Math.random().toString(36).slice(2,5),i:i,n:n,d:d,u:u});saveApps();
-  $("nn").value=$("ni").value=$("nd").value=$("nu").value="";$("aerr").textContent="";
-  renderAdmin();renderHome();
-};
-
+$("logout").onclick=function(){location.hash="#/"};
+$("home2").onclick=function(){location.hash="#/"};
 $("mkadmin").onclick=async function(){
   $("merr").textContent=$("mok").textContent="";
   if(!authed)return;
   var em=$("ne").value.trim().toLowerCase(),pw=$("np").value;
   if(!/^\S+@\S+\.\S+$/.test(em)){$("merr").textContent="이메일 형식이 올바르지 않습니다.";return}
   if(pw.length<8){$("merr").textContent="비밀번호는 8자 이상이어야 합니다.";return}
-  var s=hex(crypto.getRandomValues(new Uint8Array(16)));
-  var h=await hash(em,pw,s);
-  var list=load("tj_admins",[]);list.push({s:s,h:h});save("tj_admins",list);
-  $("ne").value=$("np").value="";
-  $("mok").textContent="어드민 아이디를 만들었어요. 다음 로그인부터 사용할 수 있어요.";
+  try{
+    var tmp=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY,OPT);   // 현재 로그인에 영향 없는 별도 클라이언트
+    var r=await tmp.auth.signUp({email:em,password:pw});
+    if(r.error||!r.data.user||!(r.data.user.identities||[]).length){$("merr").textContent="계정을 만들지 못했어요. 이미 가입된 이메일일 수 있어요.";return}
+    chk(await sb.from("admins").insert({user_id:r.data.user.id}));
+    $("ne").value=$("np").value="";$("mok").textContent="어드민 아이디를 만들었어요. 바로 로그인할 수 있어요.";
+  }catch(e){lost(e,$("merr"))}
 };
 
-renderHome();route();
+/* 라우팅 */
+function route(){
+  var h=location.hash;
+  ["home","login","admin","inquiry","notice"].forEach(function(id){$(id).classList.add("hide")});
+  if(h==="#/admin"){
+    if(authed){
+      $("admin").classList.remove("hide");renderAdmin();renderNoticeAdmin();renderInq();$("ndate").value=today();loadInqs();
+      if(!timer)timer=setInterval(loadInqs,20000);
+    }else{$("login").classList.remove("hide");$("em").value="";$("pw").value="";$("lerr").textContent=""}
+  }else if(h==="#/notice"){$("notice").classList.remove("hide");renderNotices();refresh()}
+  else if(h==="#/inquiry"){$("inquiry").classList.remove("hide");selApp=null;renderInquiry();refresh()}
+  else{$("home").classList.remove("hide");refresh()}
+  window.scrollTo(0,0);
+}
+window.addEventListener("hashchange",function(){
+  if(location.hash!=="#/admin")leaveAdmin();
+  route();
+});
+setInterval(refresh,20000);
+route();
 })();
 </script>
 </body>
