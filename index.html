@@ -185,9 +185,10 @@ function field(ph,val,label){var i=document.createElement("input");i.placeholder
 function chk(r){if(r.error)throw r.error;return r.data}
 function lost(e,el){
   if(authed&&e&&(e.status===401||/jwt/i.test(e.message||""))){authed=false;route();return}
-  el.textContent="처리하지 못했어요. 연결과 권한을 확인해 주세요.";
+  var m=(e&&(e.message||e.code))||"";
+  el.textContent="처리하지 못했어요. "+m;alert("처리하지 못했어요.\n"+m);
 }
-async function run(q,el){try{chk(await q);el.textContent="";return true}catch(e){lost(e,el);return false}}
+async function run(q,el,need){try{var d=chk(await q);if(need&&(!d||!d.length))throw{message:"권한이 없어서 처리되지 않았어요. 어드민으로 등록됐는지 확인해 주세요."};el.textContent="";return true}catch(e){lost(e,el);return false}}
 function normUrl(u){
   u=(u||"").trim();
   if(!u)return "";
@@ -238,7 +239,7 @@ function renderNoticeAdmin(){
     var d=mk("button","del","삭제");
     d.onclick=async function(){
       if(!confirm("이 공지를 삭제할까요?"))return;
-      await run(sb.from("notices").delete().eq("id",n.id),$("nerr"));await refresh();
+      await run(sb.from("notices").delete().eq("id",n.id).select(),$("nerr"),true);await refresh();
     };
     r.appendChild(tx);r.appendChild(d);box.appendChild(r);
   });
@@ -267,7 +268,7 @@ function renderAdmin(){
         var n=fn.value.trim(),u=normUrl(fu.value);
         if(!n){err.textContent="앱 이름을 입력해 주세요.";return}
         if(u===null){err.textContent="사용할 수 없는 주소입니다.";return}
-        if(await run(sb.from("apps").update({icon:fi.value.trim()||"🧩",name:n,description:fd.value.trim(),url:u}).eq("id",a.id),err)){editing=-1;await refresh()}
+        if(await run(sb.from("apps").update({icon:fi.value.trim()||"🧩",name:n,description:fd.value.trim(),url:u}).eq("id",a.id).select(),err,true)){editing=-1;await refresh()}
       };
       var cn=mk("button","ghost","취소");cn.onclick=function(){editing=-1;renderAdmin()};
       btns.appendChild(sv);btns.appendChild(cn);
@@ -279,7 +280,7 @@ function renderAdmin(){
       var d=mk("button","del","빼기");
       d.onclick=async function(){
         if(!confirm(a.n+" 앱을 뺄까요?"))return;
-        await run(sb.from("apps").delete().eq("id",a.id),$("aerr"));editing=-1;await refresh();
+        await run(sb.from("apps").delete().eq("id",a.id).select(),$("aerr"),true);editing=-1;await refresh();
       };
       r.appendChild(mk("div","ic",a.i));r.appendChild(tx);r.appendChild(ed);r.appendChild(d);
     }
@@ -334,7 +335,7 @@ function renderInq(){
     var d=mk("button","del","삭제");
     d.onclick=async function(){
       if(!confirm("이 문의를 삭제할까요?"))return;
-      await run(sb.from("inquiries").delete().eq("id",q.id),$("ierr"));await loadInqs();
+      await run(sb.from("inquiries").delete().eq("id",q.id).select(),$("ierr"),true);await loadInqs();
     };
     r.appendChild(d);box.appendChild(r);
   });
