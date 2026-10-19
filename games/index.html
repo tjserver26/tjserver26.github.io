@@ -123,6 +123,20 @@ button.adminlink:has(.avs){padding:4px}
 .mrow .tx{min-width:140px}
 .mrow .btns{display:flex;gap:8px;flex-wrap:wrap}
 .mrow .avs{width:40px;height:40px}
+select{width:100%;padding:12px 14px;border-radius:12px;border:1px solid var(--line);background:#0e0c22;color:var(--ink);font:inherit}
+.seasonbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 16px}
+.seasonbar b{font-size:17px}
+.seasonbar .badge{margin-left:0}
+button:disabled{opacity:.35;cursor:default}
+#ranking .tabs{margin-right:0}
+.gr{font-family:Orbitron,sans-serif;font-weight:900;min-width:44px;text-align:center;padding:6px 10px;border-radius:10px;font-size:18px;flex:none}
+.gS{background:linear-gradient(135deg,#ff4fd8,#7b5cf5);color:#fff;box-shadow:0 0 14px rgba(255,79,216,.5)}
+.gA{background:#ff5d73;color:#fff}.gB{background:#ffb020;color:#1a1200}.gC{background:#2ecc9a;color:#04261c}.gD{background:#4a4f6a;color:#fff}
+.two2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.rkrow{display:flex;align-items:center;gap:12px}
+.rkno{width:44px;text-align:center;font-family:Orbitron,sans-serif;font-weight:900;font-size:18px;color:var(--neon);flex:none}
+.pts{font-family:Orbitron,sans-serif;font-weight:700;color:var(--neon);flex:none}
+.me{box-shadow:0 0 0 1px var(--neon),0 0 18px rgba(0,229,255,.25)}
 </style>
 </head>
 <body>
@@ -140,12 +154,20 @@ button.adminlink:has(.avs){padding:4px}
   <h2>▸ SELECT GAME</h2>
   <div class="grid" id="grid"></div>
   <footer>TJ Games · 2026</footer>
-  <div class="dock"><a class="fab" href="#/notice">공지사항</a><a class="fab main" href="#/inquiry">문의</a></div>
+  <div class="dock"><a class="fab" href="#/ranking">🏆 랭킹</a><a class="fab" href="#/notice">공지사항</a><a class="fab main" href="#/inquiry">문의</a></div>
 </section>
 
 <section id="notice" class="hide">
   <div class="bar"><h1>공지사항</h1><a class="adminlink" href="#/">홈으로</a></div>
   <div id="nlist"></div>
+</section>
+
+<section id="ranking" class="hide">
+  <div class="bar"><h1>랭킹</h1><a class="adminlink" href="#/">홈으로</a></div>
+  <div class="seasonbar"><button class="ghost sm" id="rkprev" aria-label="이전 달">◀</button><b id="rklabel"></b><span class="badge" id="rkpill"></span><button class="ghost sm" id="rknext" aria-label="다음 달">▶</button><button class="ghost sm" id="rkall">전체 기간</button></div>
+  <div class="tabs"><button class="ghost on" id="rtab1">전체 랭킹</button><button class="ghost" id="rtab2">게임별 랭킹</button></div>
+  <div id="rk1"><p class="muted">게임별 최고 기록의 등급 점수를 합산해요. (S 100 · A 60 · B 30 · C 10)</p><div class="list" id="rklist1"></div></div>
+  <div id="rk2" class="hide"><div class="two2"><select id="rkgame" aria-label="게임"></select><select id="rkmode" aria-label="모드"></select></div><div class="list" id="rklist2"></div></div>
 </section>
 
 <section id="inquiry" class="hide">
@@ -182,6 +204,7 @@ button.adminlink:has(.avs){padding:4px}
     <div class="two"><input id="ni" placeholder="🎮" maxlength="4" aria-label="아이콘"><input id="nn" placeholder="게임 이름" aria-label="게임 이름"></div>
     <input id="nd" placeholder="설명" style="margin-top:12px" aria-label="설명">
     <input id="nu" placeholder="주소 (예: example.com)" style="margin-top:12px" aria-label="주소">
+    <textarea id="ng" rows="3" style="margin-top:12px" aria-label="등급 기준"></textarea>
     <button class="full" id="addapp">게임 추가</button>
     <div class="err" id="aerr"></div>
   </div>
@@ -267,7 +290,13 @@ button.adminlink:has(.avs){padding:4px}
       <button class="full" id="psave">저장</button>
       <button class="ghost full" id="plogout">로그아웃</button>
     </div>
-    <div id="p2" class="hide"><div id="psum" class="muted"></div><div class="list" id="plist" style="margin-top:12px"></div></div>
+    <div id="p2" class="hide">
+      <div class="seasonbar"><button class="ghost sm" id="pkprev" aria-label="이전 달">◀</button><b id="pklabel"></b><span class="badge" id="pkpill"></span><button class="ghost sm" id="pknext" aria-label="다음 달">▶</button><button class="ghost sm" id="pkall">전체 기간</button></div>
+      <div id="psum" class="muted"></div>
+      <div class="list" id="plist" style="margin-top:8px"></div>
+      <h2 style="margin-top:22px">최근 기록</h2>
+      <div class="list" id="precent"></div>
+    </div>
   </div>
 </div>
 
@@ -331,7 +360,7 @@ function safeUrl(u){return normUrl(u)||""}
 function today(){var d=new Date();return d.getFullYear()+"-"+("0"+(d.getMonth()+1)).slice(-2)+"-"+("0"+d.getDate()).slice(-2)}
 function fmt(ts){return new Date(ts).toLocaleString("ko-KR")}
 function idOk(s){return /^[a-z0-9_]{4,20}$/.test(s)}
-function mapApp(r){return{id:r.id,i:r.icon,n:r.name,d:r.description,u:r.url,p:r.position}}
+function mapApp(r){return{id:r.id,i:r.icon,n:r.name,d:r.description,u:r.url,p:r.position,g:r.grades||{}}}
 function avEl(src,name,cls){
   var d=mk("div",cls);
   if(src&&src.indexOf("data:image/")===0){var i=document.createElement("img");i.alt="";i.src=src;d.appendChild(i)}
@@ -462,13 +491,15 @@ $("plogout").onclick=async function(){
   await sb.auth.signOut();me=null;isAdmin=false;adminOk=false;hide("profm");renderTop();
   if(location.hash==="#/admin")location.hash="#/";else route();
 };
-function recRow(r,showUser){
-  var row=mk("div","row"),tx=mk("div","tx");
-  tx.appendChild(mk("b","",r.game_name+(r.kind==="score"?"  ·  점수 "+Number(r.score):"  ·  플레이")));
-  tx.appendChild(mk("span","",fmt(r.created_at)));
-  row.appendChild(tx);return row;
+function recRow(r,onDel){
+  var row=mk("div","row mrow"),tx=mk("div","tx"),b=mk("b","",r.game_name);
+  if(r.kind==="score")b.appendChild(mk("span","badge",(r.mode&&r.mode!=="기본"?r.mode+" · ":"")+Number(r.score).toLocaleString()+"점"));
+  else b.appendChild(mk("span","badge","플레이"));
+  tx.appendChild(b);tx.appendChild(mk("span","",fmt(r.created_at)));row.appendChild(tx);
+  if(onDel){var d=mk("button","del sm","삭제");d.onclick=function(){onDel(r)};row.appendChild(d)}
+  return row;
 }
-function renderRecs(box,sumBox,recs){
+function renderRecs(box,sumBox,recs,onDel){
   box.textContent="";
   if(sumBox){
     var by={};
@@ -480,14 +511,110 @@ function renderRecs(box,sumBox,recs){
     sumBox.style.whiteSpace="pre-wrap";
   }
   if(!recs.length){box.appendChild(mk("div","muted","아직 게임 기록이 없어요."));return}
-  recs.forEach(function(r){box.appendChild(recRow(r))});
+  recs.forEach(function(r){box.appendChild(recRow(r,onDel))});
+}
+function renderSummary(rows){
+  var box=$("plist");box.textContent="";
+  if(!rows.length){box.appendChild(mk("div","muted","이 시즌의 게임 기록이 없어요."));return}
+  rows.forEach(function(r){
+    var row=mk("div","row mrow"),tx=mk("div","tx"),b=mk("b","",r.g_name);
+    if(r.g_mode&&r.g_mode!=="기본")b.appendChild(mk("span","badge",r.g_mode));
+    tx.appendChild(b);
+    var sub=r.best_score===null?"플레이 "+r.plays+"회 · 아직 점수 기록이 없어요"
+      :"최고 "+Number(r.best_score).toLocaleString()+"점"+(r.rnk?" · "+r.rnk+"위 / "+r.players+"명":"")+(Number(r.plays)?" · 플레이 "+r.plays+"회":"");
+    tx.appendChild(mk("span","",sub));
+    row.appendChild(mk("div","ic",r.g_icon));row.appendChild(tx);
+    if(r.grade)row.appendChild(mk("div","gr g"+r.grade,r.grade));
+    box.appendChild(row);
+  });
 }
 async function loadMyRecs(){
+  if(!me)return;
   $("plist").textContent="";$("psum").textContent="불러오는 중...";
   try{
-    var recs=chk(await sb.from("game_records").select("*").eq("user_id",me.id).order("created_at",{ascending:false}).limit(200));
-    renderRecs($("plist"),$("psum"),recs);
+    renderSummary(chk(await sb.rpc("my_game_summary",{p_season:seasons.pk})));$("psum").textContent="";
+    renderRecs($("precent"),null,chk(await sb.from("game_records").select("*").eq("user_id",me.id).order("created_at",{ascending:false}).limit(30)));
   }catch(e){$("psum").textContent="기록을 불러오지 못했어요."}
+}
+
+/* ================= 시즌 / 등급 / 랭킹 ================= */
+var GRADE_HINT="등급 기준 (선택) — 줄마다 '모드: S점수, A점수, B점수, C점수'\n예) 기본: 3000, 2000, 1000, 300\n예) hard: 5000, 3000, 1500, 500";
+var GRADE_ERR="등급 기준 형식이 올바르지 않아요. 줄마다 '모드: S, A, B, C' 점수를 큰 순서로 적어 주세요. 예) hard: 5000, 3000, 1500, 500";
+function parseGrades(txt){
+  var o={},ok=true;
+  String(txt||"").split("\n").forEach(function(line){
+    line=line.trim().replace("：",":");if(!line)return;
+    var i=line.indexOf(":");if(i<1){ok=false;return}
+    var k=line.slice(0,i).trim(),v=line.slice(i+1).split(",").map(function(x){return x.trim()===""?NaN:Number(x.trim())});
+    if(!k||k.length>20||v.length!==4||v.some(function(n){return !isFinite(n)||n<0})||!(v[0]>=v[1]&&v[1]>=v[2]&&v[2]>=v[3])){ok=false;return}
+    o[k]=v;
+  });
+  return ok?o:null;
+}
+function gradesText(g){return Object.keys(g||{}).map(function(k){return k+": "+g[k].join(", ")}).join("\n")}
+function gradeOf(g,mode,s){var t=g&&g[mode];if(!t||t.length<4)return null;return s>=t[0]?"S":s>=t[1]?"A":s>=t[2]?"B":s>=t[3]?"C":"D"}
+function cur(){return new Date(Date.now()+9*3600000).toISOString().slice(0,7)}   // 한국 시간 기준 이번 달
+var seasons={pk:cur(),rk:cur()};
+function seasonLabel(s){return s==="all"?"전체 기간":s.slice(0,4)+"년 "+Number(s.slice(5))+"월 시즌"}
+function shiftSeason(s,d){if(s==="all")return cur();var y=+s.slice(0,4),m=+s.slice(5)-1+d;y+=Math.floor(m/12);m=((m%12)+12)%12;return y+"-"+("0"+(m+1)).slice(-2)}
+function wireSeason(k,onChange){
+  function paint(){
+    var s=seasons[k];$(k+"label").textContent=seasonLabel(s);
+    var pill=$(k+"pill");pill.classList.toggle("hide",s==="all");pill.textContent=s===cur()?"진행 중":"종료";
+    $(k+"next").disabled=s==="all"||s>=cur();$(k+"all").textContent=s==="all"?"이번 시즌":"전체 기간";
+  }
+  $(k+"prev").onclick=function(){seasons[k]=shiftSeason(seasons[k],-1);paint();onChange()};
+  $(k+"next").onclick=function(){if(seasons[k]!=="all"&&seasons[k]<cur()){seasons[k]=shiftSeason(seasons[k],1);paint();onChange()}};
+  $(k+"all").onclick=function(){seasons[k]=seasons[k]==="all"?cur():"all";paint();onChange()};
+  paint();
+}
+function medal(n){return n===1?"🥇":n===2?"🥈":n===3?"🥉":String(n)}
+var rkTab=1;
+function rtabs(){
+  $("rtab1").classList.toggle("on",rkTab===1);$("rtab2").classList.toggle("on",rkTab===2);
+  $("rk1").classList.toggle("hide",rkTab!==1);$("rk2").classList.toggle("hide",rkTab!==2);loadRanking();
+}
+$("rtab1").onclick=function(){rkTab=1;rtabs()};$("rtab2").onclick=function(){rkTab=2;rtabs()};
+function fillModes(){
+  var a=apps.filter(function(x){return x.id===$("rkgame").value})[0],m=$("rkmode"),v=m.value;m.textContent="";
+  var keys=a&&Object.keys(a.g||{}).length?Object.keys(a.g):["기본"];
+  keys.forEach(function(k){var o=document.createElement("option");o.value=k;o.textContent=k;m.appendChild(o)});
+  if(v&&keys.indexOf(v)>=0)m.value=v;
+}
+function fillGames(){
+  var s=$("rkgame"),v=s.value;s.textContent="";
+  apps.forEach(function(a){var o=document.createElement("option");o.value=a.id;o.textContent=a.i+" "+a.n;s.appendChild(o)});
+  if(v)s.value=v;fillModes();
+}
+$("rkgame").onchange=function(){fillModes();loadRanking()};$("rkmode").onchange=loadRanking;
+async function loadRanking(){
+  if(rkTab===1){
+    var box=$("rklist1");box.textContent="불러오는 중...";
+    try{
+      var rows=chk(await sb.rpc("overall_ranking",{p_season:seasons.rk}));box.textContent="";
+      if(!rows.length){box.appendChild(mk("div","muted","아직 랭킹이 없어요. 점수를 기록해 보세요!"));return}
+      rows.forEach(function(r){
+        var row=mk("div","row rkrow"+(r.is_me?" me":"")),tx=mk("div","tx");
+        row.appendChild(mk("div","rkno",medal(Number(r.rnk))));
+        tx.appendChild(mk("b","",r.nickname+(r.is_me?" (나)":"")));tx.appendChild(mk("span","",r.games_played+"개 게임"));
+        row.appendChild(tx);row.appendChild(mk("div","pts",Number(r.points).toLocaleString()+" P"));box.appendChild(row);
+      });
+    }catch(e){box.textContent="랭킹을 불러오지 못했어요."}
+  }else{
+    var b2=$("rklist2"),gid=$("rkgame").value,mode=$("rkmode").value||"기본",app=apps.filter(function(x){return x.id===gid})[0];
+    if(!gid){b2.textContent="";b2.appendChild(mk("div","muted","등록된 게임이 없어요."));return}
+    b2.textContent="불러오는 중...";
+    try{
+      var rs=chk(await sb.rpc("game_leaderboard",{p_game:gid,p_mode:mode,p_season:seasons.rk}));b2.textContent="";
+      if(!rs.length){b2.appendChild(mk("div","muted","아직 기록이 없어요."));return}
+      rs.forEach(function(r){
+        var row=mk("div","row rkrow"+(r.is_me?" me":"")),tx=mk("div","tx"),sc=Number(r.best_score),gd=gradeOf(app&&app.g,mode,sc);
+        row.appendChild(mk("div","rkno",medal(Number(r.rnk))));
+        tx.appendChild(mk("b","",r.nickname+(r.is_me?" (나)":"")));tx.appendChild(mk("span","",sc.toLocaleString()+"점"));
+        row.appendChild(tx);if(gd)row.appendChild(mk("div","gr g"+gd,gd));b2.appendChild(row);
+      });
+    }catch(e){b2.textContent="랭킹을 불러오지 못했어요."}
+  }
 }
 
 /* ================= 홈 / 게임 실행 ================= */
@@ -519,11 +646,12 @@ window.addEventListener("message",function(e){
   if(!playing||e.source!==$("pframe").contentWindow)return;
   var d=e.data;if(!d||d.type!=="tj-score")return;
   var sc=Number(d.score);
-  if(!me||!isFinite(sc)||Date.now()-lastScore<1000)return;
+  if(!me||!isFinite(sc)||sc<0||Date.now()-lastScore<1000)return;
+  var mode=(typeof d.mode==="string"&&d.mode.trim())?d.mode.trim().slice(0,20):"기본";
   lastScore=Date.now();
   var data={};try{if(d.data&&typeof d.data==="object"&&JSON.stringify(d.data).length<2000)data=d.data}catch(x){}
-  sb.from("game_records").insert({user_id:me.id,game_id:playing.id,game_name:playing.n,kind:"score",score:sc,data:data})
-    .then(function(r){$("pstat").textContent=r.error?"기록 저장 실패":"기록 저장됨 ✓ 점수 "+sc});
+  sb.from("game_records").insert({user_id:me.id,game_id:playing.id,game_name:playing.n,kind:"score",score:sc,mode:mode,data:data})
+    .then(function(r){var gd=gradeOf(playing&&playing.g,mode,sc);$("pstat").textContent=r.error?"기록 저장 실패":"기록 저장됨 ✓ "+sc.toLocaleString()+"점"+(gd?" · "+gd+"등급":"")});
 });
 
 /* ================= 공지 ================= */
@@ -574,19 +702,22 @@ function renderAdmin(){
       var fi=field("🎮",a.i,"아이콘");fi.maxLength=4;
       var fn=field("게임 이름",a.n,"게임 이름");two.appendChild(fi);two.appendChild(fn);
       var fd=field("설명",a.d,"설명"),fu=field("주소 (예: example.com)",a.u,"주소");
+      var fg=mk("textarea");fg.rows=3;fg.placeholder=GRADE_HINT;fg.value=gradesText(a.g);fg.setAttribute("aria-label","등급 기준");
       var err=mk("div","err"),btns=mk("div","btns"),sv=mk("button","","저장");
       sv.onclick=async function(){
         var n=fn.value.trim(),u=normUrl(fu.value);
         if(!n){err.textContent="게임 이름을 입력해 주세요.";return}
         if(u===null){err.textContent="사용할 수 없는 주소입니다.";return}
-        if(await run(sb.from("game_apps").update({icon:fi.value.trim()||"🎮",name:n,description:fd.value.trim(),url:u}).eq("id",a.id).select(),err,true)){editing=-1;await refresh()}
+        var gr=parseGrades(fg.value);if(gr===null){err.textContent=GRADE_ERR;return}
+        if(await run(sb.from("game_apps").update({icon:fi.value.trim()||"🎮",name:n,description:fd.value.trim(),url:u,grades:gr}).eq("id",a.id).select(),err,true)){editing=-1;await refresh()}
       };
       var cn=mk("button","ghost","취소");cn.onclick=function(){editing=-1;renderAdmin()};
       btns.appendChild(sv);btns.appendChild(cn);
-      [two,fd,fu,err,btns].forEach(function(x){wrap.appendChild(x)});r.appendChild(wrap);
+      [two,fd,fu,fg,err,btns].forEach(function(x){wrap.appendChild(x)});r.appendChild(wrap);
     }else{
       var tx=mk("div","tx");tx.appendChild(mk("b","",a.n));tx.appendChild(mk("span","",a.d));
       if(a.u)tx.appendChild(mk("span","url",a.u));
+      if(Object.keys(a.g||{}).length)tx.appendChild(mk("span","url","등급 기준: "+Object.keys(a.g).join(", ")));
       var ed=mk("button","ghost sm","수정");ed.onclick=function(){editing=idx;renderAdmin()};
       var d=mk("button","del","빼기");
       d.onclick=async function(){
@@ -598,12 +729,14 @@ function renderAdmin(){
     l.appendChild(r);
   });
 }
+$("ng").placeholder=GRADE_HINT;
 $("addapp").onclick=async function(){
-  var n=$("nn").value.trim(),i=$("ni").value.trim()||"🎮",d=$("nd").value.trim(),u=normUrl($("nu").value);
+  var n=$("nn").value.trim(),i=$("ni").value.trim()||"🎮",d=$("nd").value.trim(),u=normUrl($("nu").value),gr=parseGrades($("ng").value);
   if(!n){$("aerr").textContent="게임 이름을 입력해 주세요.";return}
   if(u===null){$("aerr").textContent="사용할 수 없는 주소입니다.";return}
+  if(gr===null){$("aerr").textContent=GRADE_ERR;return}
   var pos=apps.reduce(function(m,a){return Math.max(m,a.p||0)},-1)+1;
-  if(await run(sb.from("game_apps").insert({icon:i,name:n,description:d,url:u,position:pos}),$("aerr"))){$("nn").value=$("ni").value=$("nd").value=$("nu").value=""}
+  if(await run(sb.from("game_apps").insert({icon:i,name:n,description:d,url:u,position:pos,grades:gr}),$("aerr"))){$("nn").value=$("ni").value=$("nd").value=$("nu").value=$("ng").value=""}
   await refresh();
 };
 
@@ -655,7 +788,7 @@ async function viewRecs(m){
   $("reclist").textContent="불러오는 중...";show("recm");
   try{
     var recs=chk(await sb.from("game_records").select("*").eq("user_id",m.user_id).order("created_at",{ascending:false}).limit(200));
-    renderRecs($("reclist"),null,recs);
+    renderRecs($("reclist"),null,recs,async function(r){if(!confirm("이 기록을 삭제할까요?"))return;await run(sb.from("game_records").delete().eq("id",r.id).select(),$("mberr"),true);viewRecs(m)});
   }catch(e){$("reclist").textContent="기록을 불러오지 못했어요."}
 }
 $("recx").onclick=function(){hide("recm")};
@@ -761,9 +894,10 @@ $("rgo").onclick=async function(){
   if(r.error){fails++;if(fails>=5){lockUntil=Date.now()+30000;fails=0}$("rerr").textContent="비밀번호가 올바르지 않습니다.";return}
   fails=0;adminOk=true;route();
 };
+function rtabs0(){refresh().then(function(){fillGames();rtabs()})}
 function route(){
   var h=location.hash;
-  ["home","notice","inquiry","reauth","admin"].forEach(hide);
+  ["home","notice","inquiry","ranking","reauth","admin"].forEach(hide);
   clearInterval(timer);timer=null;
   if(h==="#/admin"){
     if(!isAdmin){location.hash="#/";return}
@@ -772,6 +906,7 @@ function route(){
       timer=setInterval(loadInqs,20000);
     }else{show("reauth");$("rpw").value="";$("rerr").textContent=""}
   }else if(h==="#/notice"){show("notice");renderNotices();refresh()}
+  else if(h==="#/ranking"){show("ranking");rtabs0()}
   else if(h==="#/inquiry"){show("inquiry");selApp=null;renderInquiry();refresh()}
   else{show("home");refresh()}
   window.scrollTo(0,0);
@@ -780,6 +915,7 @@ window.addEventListener("hashchange",function(){
   if(location.hash!=="#/admin")adminOk=false;
   route();
 });
+wireSeason("pk",loadMyRecs);wireSeason("rk",loadRanking);
 setInterval(refresh,20000);
 loadMe().then(function(){refresh();route()});
 })();
