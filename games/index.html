@@ -96,13 +96,45 @@ button.del{background:transparent}
 .fab.main{background:linear-gradient(90deg,#7b5cf5,#00b8d9);border-color:transparent;color:#fff;box-shadow:0 0 22px rgba(123,92,245,.55)}
 input,textarea{background:#0e0c22}
 footer{font-family:Orbitron,sans-serif;letter-spacing:2px;font-size:11px}
+.hide{display:none!important}
+button.adminlink{background:rgba(20,18,43,.8);color:var(--neon);border:1px solid rgba(0,229,255,.45);padding:8px 14px;border-radius:999px;font-weight:700;font-size:15px}
+.links{align-items:center}
+button.adminlink:has(.avs){padding:4px}
+.avs{width:30px;height:30px;border-radius:50%;overflow:hidden;display:grid;place-items:center;background:linear-gradient(135deg,#2b2070,#0f3a4a);color:#fff;font-weight:700;font-size:14px;flex:none}
+.avs img,.av img{width:100%;height:100%;object-fit:cover;display:block}
+.modal{position:fixed;inset:0;background:rgba(5,4,15,.78);display:grid;place-items:center;z-index:20;padding:16px;overflow:auto}
+.mbox{position:relative;background:var(--card);border:1px solid rgba(0,229,255,.4);border-radius:16px;padding:26px 24px 24px;width:100%;max-width:400px;box-shadow:0 0 40px rgba(123,92,245,.4);max-height:92vh;overflow:auto}
+.mbox.wide{max-width:540px}
+.x{position:absolute;right:10px;top:10px;padding:6px 10px;background:transparent!important;color:var(--sub)}
+.mt{margin:0 0 6px;font-size:22px;color:var(--ink);letter-spacing:0;font-family:"Noto Sans KR",sans-serif}
+.alt{text-align:center;color:var(--sub);font-size:14px;margin:16px 0 0}
+.alt a{color:var(--neon);cursor:pointer;text-decoration:underline}
+.tabs{display:flex;gap:8px;margin:0 28px 16px 0}
+.tabs button.on{background:var(--accent);color:#fff}
+.avrow{display:flex;align-items:center;gap:16px}
+.av{width:76px;height:76px;border-radius:50%;background:linear-gradient(135deg,#2b2070,#0f3a4a);display:grid;place-items:center;font-size:30px;font-weight:700;overflow:hidden;border:2px solid var(--neon);flex:none}
+#player{position:fixed;inset:0;z-index:30;background:#05040f;display:flex;flex-direction:column}
+.pbar{display:flex;align-items:center;gap:12px;padding:10px 14px;padding-top:calc(10px + env(safe-area-inset-top,0px));border-bottom:1px solid var(--line);flex-wrap:wrap}
+.pbar b{flex:1;min-width:80px;font-size:16px}
+#pframe{flex:1;border:0;width:100%;background:#fff}
+.badge{display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px;margin-left:6px;background:var(--tile);color:var(--neon)}
+.badge.bad{color:var(--bad)}
+.mrow{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.mrow .tx{min-width:140px}
+.mrow .btns{display:flex;gap:8px;flex-wrap:wrap}
+.mrow .avs{width:40px;height:40px}
 </style>
 </head>
 <body>
 <main>
-<!-- 홈 -->
 <section id="home">
-  <div class="top"><div class="logo">TJ</div><div class="links"><a class="adminlink" href="#/admin">어드민</a></div></div>
+  <div class="top"><div class="logo">TJ</div>
+    <div class="links">
+      <button class="adminlink" id="loginbtn">로그인</button>
+      <button class="adminlink hide" id="usericon" aria-label="내 정보"></button>
+      <a class="adminlink hide" id="adminlink" href="#/admin">어드민</a>
+    </div>
+  </div>
   <h1>TJ GAMES</h1>
   <p class="lead">TJ의 게임을 한곳에서 즐겨보세요</p>
   <h2>▸ SELECT GAME</h2>
@@ -111,13 +143,11 @@ footer{font-family:Orbitron,sans-serif;letter-spacing:2px;font-size:11px}
   <div class="dock"><a class="fab" href="#/notice">공지사항</a><a class="fab main" href="#/inquiry">문의</a></div>
 </section>
 
-<!-- 공지사항 -->
 <section id="notice" class="hide">
   <div class="bar"><h1>공지사항</h1><a class="adminlink" href="#/">홈으로</a></div>
   <div id="nlist"></div>
 </section>
 
-<!-- 문의 -->
 <section id="inquiry" class="hide">
   <div class="bar"><h1>문의하기</h1><a class="adminlink" href="#/">홈으로</a></div>
   <div id="ipick"><h2>어떤 게임에 문의할까요?</h2><div class="grid" id="ipg"></div></div>
@@ -130,36 +160,48 @@ footer{font-family:Orbitron,sans-serif;letter-spacing:2px;font-size:11px}
   </div>
 </section>
 
-<!-- 어드민 로그인 -->
-<section id="login" class="hide">
+<section id="reauth" class="hide">
   <div class="panel login">
-    <div class="logo" style="margin-bottom:16px">TJ</div>
-    <h1 style="font-size:28px;margin:0 0 4px">어드민 로그인</h1>
-    <form id="lf" autocomplete="off">
-      <label for="em">이메일</label>
-      <input id="em" type="email" autocomplete="off" required>
-      <label for="pw">비밀번호</label>
-      <input id="pw" type="password" autocomplete="new-password" required>
-      <div class="err" id="lerr" role="alert"></div>
-      <button class="full" type="submit">로그인</button>
-    </form>
+    <h1 style="font-size:26px;margin:0 0 4px">어드민 인증</h1>
+    <p class="muted">어드민 서버에 들어갈 때마다 비밀번호를 다시 확인해요.</p>
+    <label for="rpw">비밀번호</label>
+    <input id="rpw" type="password" autocomplete="new-password">
+    <div class="err" id="rerr" role="alert"></div>
+    <button class="full" id="rgo">확인</button>
     <p style="text-align:center;margin:18px 0 0"><a href="#/" style="color:var(--sub);font-size:14px">홈으로 돌아가기</a></p>
   </div>
 </section>
 
-<!-- 어드민 관리 -->
 <section id="admin" class="hide">
-  <div class="bar"><h1>어드민 · Games</h1><div><button class="ghost" id="home2">홈 보기</button> <button id="logout">로그아웃</button></div></div>
+  <div class="bar"><h1>어드민 · Games</h1><a class="adminlink" href="#/">홈으로</a></div>
 
   <div class="panel">
     <h2>게임 관리</h2>
     <div class="list" id="alist"></div>
     <label>게임 추가하기</label>
-    <div class="two"><input id="ni" placeholder="🙂" maxlength="4" aria-label="아이콘"><input id="nn" placeholder="게임 이름" aria-label="게임 이름"></div>
+    <div class="two"><input id="ni" placeholder="🎮" maxlength="4" aria-label="아이콘"><input id="nn" placeholder="게임 이름" aria-label="게임 이름"></div>
     <input id="nd" placeholder="설명" style="margin-top:12px" aria-label="설명">
     <input id="nu" placeholder="주소 (예: example.com)" style="margin-top:12px" aria-label="주소">
     <button class="full" id="addapp">게임 추가</button>
     <div class="err" id="aerr"></div>
+  </div>
+
+  <div class="panel">
+    <h2>회원 관리 <span id="mcount"></span></h2>
+    <input id="msearch" placeholder="아이디 또는 닉네임 검색" aria-label="회원 검색">
+    <div class="err" id="mberr"></div>
+    <div class="list" id="mlist" style="margin-top:12px"></div>
+  </div>
+
+  <div class="panel">
+    <h2>어드민 관리</h2>
+    <div class="list" id="adlist"></div>
+    <label>어드민 아이디 만들기</label>
+    <input id="nai" placeholder="아이디 (영문 소문자·숫자·_ 4~20자)" autocomplete="off" aria-label="아이디">
+    <input id="nan" placeholder="닉네임 (2~12자)" autocomplete="off" style="margin-top:12px" aria-label="닉네임">
+    <input id="nap" type="password" placeholder="비밀번호 (8자 이상)" autocomplete="new-password" style="margin-top:12px" aria-label="비밀번호">
+    <button class="full" id="mkadmin">어드민 아이디 만들기</button>
+    <div class="err" id="merr"></div><div class="ok" id="mok"></div>
   </div>
 
   <div class="panel">
@@ -178,39 +220,105 @@ footer{font-family:Orbitron,sans-serif;letter-spacing:2px;font-size:11px}
     <div class="err" id="ierr"></div>
     <div class="list" id="ilist"></div>
   </div>
-
-  <div class="panel">
-    <h2>어드민 아이디 만들기</h2>
-    <label for="ne">새 어드민 이메일</label><input id="ne" type="email" autocomplete="off">
-    <label for="np">비밀번호 (8자 이상)</label><input id="np" type="password" autocomplete="new-password">
-    <button class="full" id="mkadmin">어드민 아이디 만들기</button>
-    <div class="err" id="merr"></div><div class="ok" id="mok"></div>
-  </div>
 </section>
 </main>
 
+<!-- 로그인 / 회원가입 -->
+<div id="authm" class="modal hide" role="dialog" aria-modal="true">
+  <div class="mbox">
+    <button class="x" id="authx" aria-label="닫기">✕</button>
+    <div id="lview">
+      <h2 class="mt">로그인</h2>
+      <label for="lid">아이디</label><input id="lid" autocomplete="username">
+      <label for="lpw">비밀번호</label><input id="lpw" type="password" autocomplete="current-password">
+      <div class="err" id="lerr0" role="alert"></div>
+      <button class="full" id="dologin">로그인</button>
+      <p class="alt">계정이 없나요? <a id="toreg" role="button" tabindex="0">회원가입</a></p>
+    </div>
+    <div id="rview" class="hide">
+      <h2 class="mt">회원가입</h2>
+      <label for="rid">아이디</label><input id="rid" placeholder="영문 소문자·숫자·_ 4~20자" autocomplete="off">
+      <label for="rnick">닉네임</label><input id="rnick" placeholder="2~12자" maxlength="12" autocomplete="off">
+      <label for="rp1">비밀번호</label><input id="rp1" type="password" placeholder="8자 이상" autocomplete="new-password">
+      <label for="rp2">비밀번호 확인</label><input id="rp2" type="password" autocomplete="new-password">
+      <div class="err" id="rerr0" role="alert"></div>
+      <button class="full" id="doreg">회원가입</button>
+      <p class="alt"><a id="tolog" role="button" tabindex="0">로그인으로 돌아가기</a></p>
+    </div>
+  </div>
+</div>
+
+<!-- 내 정보 -->
+<div id="profm" class="modal hide" role="dialog" aria-modal="true">
+  <div class="mbox wide">
+    <button class="x" id="profx" aria-label="닫기">✕</button>
+    <div class="tabs"><button class="ghost on" id="tab1">내 정보</button><button class="ghost" id="tab2">게임 기록</button></div>
+    <div id="p1">
+      <div class="avrow">
+        <div class="av" id="pav"></div>
+        <div><input type="file" id="pfile" accept="image/*" class="hide">
+          <button class="ghost sm" id="pchoose">사진 변경</button> <button class="ghost sm" id="pdel">사진 삭제</button>
+          <div class="muted" id="pid" style="margin-top:8px"></div></div>
+      </div>
+      <label for="pnick">닉네임</label><input id="pnick" maxlength="12" autocomplete="off">
+      <label for="pn1">새 비밀번호 (바꾸지 않으면 비워두세요)</label><input id="pn1" type="password" autocomplete="new-password">
+      <label for="pn2">새 비밀번호 확인</label><input id="pn2" type="password" autocomplete="new-password">
+      <div class="err" id="perr" role="alert"></div><div class="ok" id="pok"></div>
+      <button class="full" id="psave">저장</button>
+      <button class="ghost full" id="plogout">로그아웃</button>
+    </div>
+    <div id="p2" class="hide"><div id="psum" class="muted"></div><div class="list" id="plist" style="margin-top:12px"></div></div>
+  </div>
+</div>
+
+<!-- 회원 기록 보기 (어드민) -->
+<div id="recm" class="modal hide" role="dialog" aria-modal="true">
+  <div class="mbox wide">
+    <button class="x" id="recx" aria-label="닫기">✕</button>
+    <h2 class="mt" id="rectitle"></h2>
+    <div class="list" id="reclist" style="margin-top:12px"></div>
+  </div>
+</div>
+
+<!-- 게임 화면 -->
+<div id="player" class="hide">
+  <div class="pbar">
+    <b id="ptitle"></b><span class="muted" id="pstat"></span>
+    <a id="pnew" class="adminlink" target="_blank" rel="noopener">새 탭에서 열기</a>
+    <button class="ghost sm" id="pclose">닫기</button>
+  </div>
+  <div id="pmsg" class="muted hide" style="padding:24px"></div>
+  <iframe id="pframe" title="게임" allow="fullscreen; gamepad; autoplay; clipboard-write" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-pointer-lock allow-modals"></iframe>
+</div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 (function(){
-// ▼ Supabase 프로젝트 설정 (Project URL 과 anon(공개) 키만 넣으세요. service_role / secret 키는 절대 넣지 마세요)
 var SUPABASE_URL="https://qbknoxfqlxwokkwqvqdy.supabase.co";
 var SUPABASE_ANON_KEY="sb_publishable_kFddLg0u86eE2IWGL0N8Fg_PUkkh7K2";
-// ▲
-var READY=SUPABASE_URL.indexOf("http")===0&&SUPABASE_ANON_KEY.indexOf("여기에")!==0;
-var OPT={auth:{persistSession:false,autoRefreshToken:true,detectSessionInUrl:false}};  // 로그인 저장 안 함
-var sb=READY?supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY,OPT):null;
+var DOMAIN="@tjserver26.github.io";   // 아이디를 내부 로그인용 이메일로 바꿀 때만 쓰는 값 (메일은 발송되지 않아요)
+var store;try{store=window.sessionStorage}catch(e){}
+var AUTH={persistSession:true,autoRefreshToken:true,detectSessionInUrl:false};if(store)AUTH.storage=store;  // 탭을 닫으면 로그인이 풀려요
+var sb=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{auth:AUTH});
 
-var apps=[],notices=[],inqs=[],editing=-1,selApp=null,authed=false,timer=null,fails=0,lockUntil=0,lastSend=0;
+var me=null,isAdmin=false,adminOk=false;
+var apps=[],notices=[],inqs=[],members=[],admins=[];
+var editing=-1,selApp=null,lastSend=0,lastScore=0,playing=null,pendingAvatar=null,fails=0,lockUntil=0,timer=null;
+
 function $(id){return document.getElementById(id)}
 function mk(tag,cls,txt){var e=document.createElement(tag);if(cls)e.className=cls;if(txt!==undefined)e.textContent=txt;return e}
 function field(ph,val,label){var i=document.createElement("input");i.placeholder=ph;i.value=val;i.setAttribute("aria-label",label);return i}
+function show(id){$(id).classList.remove("hide")}
+function hide(id){$(id).classList.add("hide")}
 function chk(r){if(r.error)throw r.error;return r.data}
 function lost(e,el){
-  if(authed&&e&&(e.status===401||/jwt/i.test(e.message||""))){authed=false;route();return}
   var m=(e&&(e.message||e.code))||"";
+  if(/jwt|expired/i.test(m)){m="로그인이 만료되었어요. 다시 로그인해 주세요."}
   el.textContent="처리하지 못했어요. "+m;alert("처리하지 못했어요.\n"+m);
 }
-async function run(q,el,need){try{var d=chk(await q);if(need&&(!d||!d.length))throw{message:"권한이 없어서 처리되지 않았어요. 어드민으로 등록됐는지 확인해 주세요."};el.textContent="";return true}catch(e){lost(e,el);return false}}
+async function run(q,el,need){
+  try{var d=chk(await q);if(need&&(!d||!d.length))throw{message:"권한이 없어서 처리되지 않았어요."};el.textContent="";return true}
+  catch(e){lost(e,el);return false}
+}
 function normUrl(u){
   u=(u||"").trim();
   if(!u)return "";
@@ -219,25 +327,206 @@ function normUrl(u){
   if(/^(localhost|\d{1,3}(\.\d{1,3}){3})(:|\/|$)/i.test(u))return "http://"+u;
   return "https://"+u;
 }
-function safeUrl(u){return normUrl(u)||"#"}
+function safeUrl(u){return normUrl(u)||""}
 function today(){var d=new Date();return d.getFullYear()+"-"+("0"+(d.getMonth()+1)).slice(-2)+"-"+("0"+d.getDate()).slice(-2)}
+function fmt(ts){return new Date(ts).toLocaleString("ko-KR")}
+function idOk(s){return /^[a-z0-9_]{4,20}$/.test(s)}
 function mapApp(r){return{id:r.id,i:r.icon,n:r.name,d:r.description,u:r.url,p:r.position}}
+function avEl(src,name,cls){
+  var d=mk("div",cls);
+  if(src&&src.indexOf("data:image/")===0){var i=document.createElement("img");i.alt="";i.src=src;d.appendChild(i)}
+  else d.textContent=(name||"?").slice(0,1).toUpperCase();
+  return d;
+}
 function sortedNotices(){return notices.slice().sort(function(a,b){return a.date<b.date?1:a.date>b.date?-1:b.ts-a.ts})}
 
-/* 홈 */
+/* ================= 로그인 상태 ================= */
+function renderTop(){
+  $("loginbtn").classList.toggle("hide",!!me);
+  var u=$("usericon");u.classList.toggle("hide",!me);u.textContent="";
+  if(me){u.appendChild(avEl(me.avatar,me.nickname,"avs"));u.title=me.nickname}
+  $("adminlink").classList.toggle("hide",!isAdmin);
+}
+async function loadMe(){
+  me=null;isAdmin=false;
+  try{
+    var s=(await sb.auth.getSession()).data.session;
+    if(s){
+      var p=chk(await sb.from("game_profiles").select("*").eq("user_id",s.user.id).maybeSingle());
+      if(p&&!p.banned){
+        me={id:p.user_id,username:p.username,nickname:p.nickname,avatar:p.avatar};
+        isAdmin=!!chk(await sb.from("game_admins").select("user_id").eq("user_id",s.user.id).maybeSingle());
+      }else{await sb.auth.signOut();if(p&&p.banned)alert("정지된 계정입니다.")}
+    }
+  }catch(e){}
+  renderTop();
+}
+function openAuth(){
+  show("lview");hide("rview");$("lerr0").textContent=$("rerr0").textContent="";
+  $("lid").value=$("lpw").value="";show("authm");$("lid").focus();
+}
+function closeAuth(){hide("authm");$("lpw").value=$("rp1").value=$("rp2").value=""}
+$("loginbtn").onclick=openAuth;
+$("authx").onclick=closeAuth;
+$("toreg").onclick=function(){hide("lview");show("rview");$("rerr0").textContent=""};
+$("tolog").onclick=function(){show("lview");hide("rview")};
+$("dologin").onclick=async function(){
+  var id=$("lid").value.trim().toLowerCase(),pw=$("lpw").value;
+  $("lerr0").textContent="";
+  if(Date.now()<lockUntil){$("lerr0").textContent="잠시 후 다시 시도해 주세요.";return}
+  if(!idOk(id)||!pw){$("lerr0").textContent="아이디와 비밀번호를 입력해 주세요.";return}
+  var r=await sb.auth.signInWithPassword({email:id+DOMAIN,password:pw});
+  $("lpw").value="";
+  if(r.error){fails++;if(fails>=5){lockUntil=Date.now()+30000;fails=0}$("lerr0").textContent="아이디 또는 비밀번호가 올바르지 않습니다.";return}
+  fails=0;await loadMe();
+  if(!me){$("lerr0").textContent="로그인할 수 없는 계정입니다.";return}
+  closeAuth();route();
+};
+$("doreg").onclick=async function(){
+  var id=$("rid").value.trim().toLowerCase(),nick=$("rnick").value.trim(),p1=$("rp1").value,p2=$("rp2").value,e=$("rerr0");
+  e.textContent="";
+  if(!idOk(id)){e.textContent="아이디는 영문 소문자, 숫자, _ 로 4~20자여야 해요.";return}
+  if(nick.length<2||nick.length>12){e.textContent="닉네임은 2~12자여야 해요.";return}
+  if(p1.length<8){e.textContent="비밀번호는 8자 이상이어야 해요.";return}
+  if(p1!==p2){e.textContent="비밀번호 확인이 일치하지 않아요.";return}
+  var r=await sb.auth.signUp({email:id+DOMAIN,password:p1,options:{data:{game_username:id,game_nickname:nick}}});
+  if(r.error||!r.data.user||!(r.data.user.identities||[]).length){e.textContent="회원가입에 실패했어요. 이미 사용 중인 아이디일 수 있어요.";return}
+  if(!r.data.session){var l=await sb.auth.signInWithPassword({email:id+DOMAIN,password:p1});if(l.error){e.textContent="가입은 됐지만 로그인하지 못했어요. 로그인 화면에서 다시 시도해 주세요.";return}}
+  $("rp1").value=$("rp2").value="";
+  await loadMe();
+  if(!me){e.textContent="가입 처리 중 문제가 생겼어요. 로그인 화면에서 다시 시도해 주세요.";return}
+  closeAuth();
+};
+document.addEventListener("keydown",function(e){
+  if(e.key==="Escape"){["authm","profm","recm"].forEach(hide);if(playing)closeGame()}
+  if(e.key==="Enter"){
+    if(!$("authm").classList.contains("hide")){($("rview").classList.contains("hide")?$("dologin"):$("doreg")).click()}
+    else if(!$("reauth").classList.contains("hide"))$("rgo").click();
+  }
+});
+
+/* ================= 내 정보 ================= */
+function setAv(el,src,name){el.textContent="";var a=avEl(src,name,"x");while(a.firstChild)el.appendChild(a.firstChild)}
+function openProfile(){
+  if(!me)return;
+  pendingAvatar=null;
+  setAv($("pav"),me.avatar,me.nickname);
+  $("pid").textContent="아이디: "+me.username;
+  $("pnick").value=me.nickname;$("pn1").value=$("pn2").value="";
+  $("perr").textContent=$("pok").textContent="";
+  tab(1);show("profm");
+}
+function tab(n){
+  $("tab1").classList.toggle("on",n===1);$("tab2").classList.toggle("on",n===2);
+  $("p1").classList.toggle("hide",n!==1);$("p2").classList.toggle("hide",n!==2);
+  if(n===2)loadMyRecs();
+}
+$("usericon").onclick=openProfile;
+$("profx").onclick=function(){hide("profm")};
+$("tab1").onclick=function(){tab(1)};$("tab2").onclick=function(){tab(2)};
+$("pchoose").onclick=function(){$("pfile").click()};
+$("pdel").onclick=function(){pendingAvatar="";setAv($("pav"),"",$("pnick").value||me.nickname)};
+$("pfile").onchange=function(){
+  var f=this.files[0];this.value="";
+  if(!f)return;
+  if(f.type.indexOf("image/")!==0||f.size>10e6){$("perr").textContent="10MB 이하의 이미지 파일을 선택해 주세요.";return}
+  var img=new Image(),u=URL.createObjectURL(f);
+  img.onload=function(){
+    var c=document.createElement("canvas");c.width=c.height=160;
+    var s=Math.min(img.width,img.height),sx=(img.width-s)/2,sy=(img.height-s)/2;
+    c.getContext("2d").drawImage(img,sx,sy,s,s,0,0,160,160);
+    pendingAvatar=c.toDataURL("image/jpeg",0.85);
+    setAv($("pav"),pendingAvatar,me.nickname);URL.revokeObjectURL(u);$("perr").textContent="";
+  };
+  img.onerror=function(){$("perr").textContent="이미지를 읽지 못했어요.";URL.revokeObjectURL(u)};
+  img.src=u;
+};
+$("psave").onclick=async function(){
+  var nick=$("pnick").value.trim(),n1=$("pn1").value,n2=$("pn2").value;
+  $("perr").textContent=$("pok").textContent="";
+  if(nick.length<2||nick.length>12){$("perr").textContent="닉네임은 2~12자여야 해요.";return}
+  if(n1||n2){
+    if(n1.length<8){$("perr").textContent="새 비밀번호는 8자 이상이어야 해요.";return}
+    if(n1!==n2){$("perr").textContent="새 비밀번호 확인이 일치하지 않아요.";return}
+  }
+  var upd={nickname:nick};if(pendingAvatar!==null)upd.avatar=pendingAvatar;
+  if(!(await run(sb.from("game_profiles").update(upd).eq("user_id",me.id).select(),$("perr"),true)))return;
+  if(n1){
+    var r=await sb.auth.updateUser({password:n1});
+    if(r.error){$("perr").textContent="비밀번호를 바꾸지 못했어요. "+r.error.message;return}
+  }
+  me.nickname=nick;if(pendingAvatar!==null)me.avatar=pendingAvatar;pendingAvatar=null;
+  $("pn1").value=$("pn2").value="";renderTop();$("pok").textContent="저장했어요.";
+};
+$("plogout").onclick=async function(){
+  await sb.auth.signOut();me=null;isAdmin=false;adminOk=false;hide("profm");renderTop();
+  if(location.hash==="#/admin")location.hash="#/";else route();
+};
+function recRow(r,showUser){
+  var row=mk("div","row"),tx=mk("div","tx");
+  tx.appendChild(mk("b","",r.game_name+(r.kind==="score"?"  ·  점수 "+Number(r.score):"  ·  플레이")));
+  tx.appendChild(mk("span","",fmt(r.created_at)));
+  row.appendChild(tx);return row;
+}
+function renderRecs(box,sumBox,recs){
+  box.textContent="";
+  if(sumBox){
+    var by={};
+    recs.forEach(function(r){var b=by[r.game_name]=by[r.game_name]||{plays:0,best:null};
+      if(r.kind==="play")b.plays++;
+      if(r.kind==="score"){var s=Number(r.score);if(b.best===null||s>b.best)b.best=s}});
+    var names=Object.keys(by);
+    sumBox.textContent=names.length?names.map(function(n){return n+" — 플레이 "+by[n].plays+"회"+(by[n].best!==null?", 최고 점수 "+by[n].best:"")}).join("\n"):"";
+    sumBox.style.whiteSpace="pre-wrap";
+  }
+  if(!recs.length){box.appendChild(mk("div","muted","아직 게임 기록이 없어요."));return}
+  recs.forEach(function(r){box.appendChild(recRow(r))});
+}
+async function loadMyRecs(){
+  $("plist").textContent="";$("psum").textContent="불러오는 중...";
+  try{
+    var recs=chk(await sb.from("game_records").select("*").eq("user_id",me.id).order("created_at",{ascending:false}).limit(200));
+    renderRecs($("plist"),$("psum"),recs);
+  }catch(e){$("psum").textContent="기록을 불러오지 못했어요."}
+}
+
+/* ================= 홈 / 게임 실행 ================= */
 function renderHome(){
   var g=$("grid");g.textContent="";
   apps.forEach(function(a){
-    var el=mk("a","card");el.href=safeUrl(a.u);
+    var el=mk("a","card");el.href=safeUrl(a.u)||"#";
     var tx=mk("div","tx");tx.appendChild(mk("b","",a.n));tx.appendChild(mk("span","",a.d));
-    el.appendChild(mk("div","ic",a.i));el.appendChild(tx);el.appendChild(mk("div","go","›"));g.appendChild(el);
+    el.appendChild(mk("div","ic",a.i));el.appendChild(tx);el.appendChild(mk("div","go","›"));
+    el.onclick=function(ev){ev.preventDefault();openGame(a)};
+    g.appendChild(el);
   });
   var so=mk("div","soon");
   so.innerHTML='<div class="ic">＋</div><div class="tx"><b>Coming Soon</b><span>새로운 게임이 추가될 예정입니다</span></div>';
   g.appendChild(so);
 }
+function openGame(a){
+  playing=a;var url=safeUrl(a.u);
+  $("ptitle").textContent=a.i+" "+a.n;
+  $("pstat").textContent=me?"기록 저장 중 · "+me.nickname:"비로그인 · 기록이 저장되지 않아요";
+  show("player");document.body.style.overflow="hidden";
+  if(url){hide("pmsg");$("pframe").classList.remove("hide");$("pframe").src=url;$("pnew").href=url;$("pnew").classList.remove("hide")}
+  else{$("pframe").classList.add("hide");$("pnew").classList.add("hide");$("pmsg").textContent="아직 주소가 등록되지 않은 게임이에요.";show("pmsg")}
+  if(me&&url){sb.from("game_records").insert({user_id:me.id,game_id:a.id,game_name:a.n,kind:"play"}).then(function(){})}
+}
+function closeGame(){playing=null;$("pframe").src="about:blank";hide("player");document.body.style.overflow=""}
+$("pclose").onclick=closeGame;
+window.addEventListener("message",function(e){
+  if(!playing||e.source!==$("pframe").contentWindow)return;
+  var d=e.data;if(!d||d.type!=="tj-score")return;
+  var sc=Number(d.score);
+  if(!me||!isFinite(sc)||Date.now()-lastScore<1000)return;
+  lastScore=Date.now();
+  var data={};try{if(d.data&&typeof d.data==="object"&&JSON.stringify(d.data).length<2000)data=d.data}catch(x){}
+  sb.from("game_records").insert({user_id:me.id,game_id:playing.id,game_name:playing.n,kind:"score",score:sc,data:data})
+    .then(function(r){$("pstat").textContent=r.error?"기록 저장 실패":"기록 저장됨 ✓ 점수 "+sc});
+});
 
-/* 공지 */
+/* ================= 공지 ================= */
 function renderNotices(){
   var box=$("nlist");box.textContent="";
   var list=sortedNotices();
@@ -274,7 +563,7 @@ $("nadd").onclick=async function(){
   await refresh();
 };
 
-/* 게임 관리 */
+/* ================= 게임 관리 (어드민) ================= */
 function renderAdmin(){
   var l=$("alist");l.textContent="";
   apps.forEach(function(a,idx){
@@ -282,7 +571,7 @@ function renderAdmin(){
     if(idx===editing){
       r.className="row edit";
       var wrap=mk("div","editbox"),two=mk("div","two");
-      var fi=field("🙂",a.i,"아이콘");fi.maxLength=4;
+      var fi=field("🎮",a.i,"아이콘");fi.maxLength=4;
       var fn=field("게임 이름",a.n,"게임 이름");two.appendChild(fi);two.appendChild(fn);
       var fd=field("설명",a.d,"설명"),fu=field("주소 (예: example.com)",a.u,"주소");
       var err=mk("div","err"),btns=mk("div","btns"),sv=mk("button","","저장");
@@ -318,19 +607,103 @@ $("addapp").onclick=async function(){
   await refresh();
 };
 
-/* 문의 */
+/* ================= 회원 관리 / 어드민 관리 ================= */
+async function loadMembers(){
+  try{
+    members=chk(await sb.from("game_profiles").select("*").order("created_at",{ascending:false}).limit(1000));
+    admins=chk(await sb.from("game_admins").select("user_id"));
+    renderMembers();renderAdmins();
+  }catch(e){lost(e,$("mberr"))}
+}
+function isAdm(uid){return admins.some(function(a){return a.user_id===uid})}
+function renderMembers(){
+  var q=$("msearch").value.trim().toLowerCase(),box=$("mlist");box.textContent="";
+  $("mcount").textContent="("+members.length+"명)";
+  var list=members.filter(function(m){return !q||m.username.indexOf(q)>=0||m.nickname.toLowerCase().indexOf(q)>=0});
+  if(!list.length){box.appendChild(mk("div","muted","회원이 없어요."));return}
+  list.forEach(function(m){
+    var r=mk("div","row mrow");
+    r.appendChild(avEl(m.avatar,m.nickname,"avs"));
+    var tx=mk("div","tx"),b=mk("b","",m.nickname);
+    if(isAdm(m.user_id))b.appendChild(mk("span","badge","어드민"));
+    if(m.banned)b.appendChild(mk("span","badge bad","정지"));
+    tx.appendChild(b);tx.appendChild(mk("span","","@"+m.username+" · 가입 "+new Date(m.created_at).toLocaleDateString("ko-KR")));
+    r.appendChild(tx);
+    var btns=mk("div","btns"),self=me&&m.user_id===me.id;
+    var rec=mk("button","ghost sm","기록 보기");rec.onclick=function(){viewRecs(m)};btns.appendChild(rec);
+    if(!self){
+      var ban=mk("button","del",m.banned?"정지 해제":"정지");
+      ban.onclick=async function(){
+        if(!confirm(m.nickname+" 님을 "+(m.banned?"정지 해제":"정지")+"할까요?"))return;
+        await run(sb.from("game_profiles").update({banned:!m.banned}).eq("user_id",m.user_id).select(),$("mberr"),true);loadMembers();
+      };
+      btns.appendChild(ban);
+      var adm=isAdm(m.user_id),ab=mk("button","ghost sm",adm?"어드민 해제":"어드민 지정");
+      ab.onclick=async function(){
+        if(!confirm(m.nickname+" 님을 "+(adm?"어드민에서 해제":"어드민으로 지정")+"할까요?"))return;
+        var q=adm?sb.from("game_admins").delete().eq("user_id",m.user_id).select():sb.from("game_admins").insert({user_id:m.user_id}).select();
+        await run(q,$("mberr"),true);loadMembers();
+      };
+      btns.appendChild(ab);
+    }
+    r.appendChild(btns);box.appendChild(r);
+  });
+}
+$("msearch").oninput=renderMembers;
+async function viewRecs(m){
+  $("rectitle").textContent=m.nickname+" (@"+m.username+") 게임 기록";
+  $("reclist").textContent="불러오는 중...";show("recm");
+  try{
+    var recs=chk(await sb.from("game_records").select("*").eq("user_id",m.user_id).order("created_at",{ascending:false}).limit(200));
+    renderRecs($("reclist"),null,recs);
+  }catch(e){$("reclist").textContent="기록을 불러오지 못했어요."}
+}
+$("recx").onclick=function(){hide("recm")};
+function renderAdmins(){
+  var box=$("adlist");box.textContent="";
+  admins.forEach(function(a){
+    var m=members.filter(function(x){return x.user_id===a.user_id})[0];
+    var r=mk("div","row mrow");
+    r.appendChild(avEl(m&&m.avatar,m?m.nickname:"?","avs"));
+    var tx=mk("div","tx");tx.appendChild(mk("b","",m?m.nickname:"(알 수 없음)"));tx.appendChild(mk("span","",m?"@"+m.username:a.user_id));
+    r.appendChild(tx);
+    if(me&&a.user_id===me.id)r.appendChild(mk("span","badge","나"));
+    else{
+      var d=mk("button","del","어드민 해제");
+      d.onclick=async function(){
+        if(!confirm("어드민에서 해제할까요?"))return;
+        await run(sb.from("game_admins").delete().eq("user_id",a.user_id).select(),$("merr"),true);loadMembers();
+      };
+      r.appendChild(d);
+    }
+    box.appendChild(r);
+  });
+}
+$("mkadmin").onclick=async function(){
+  var id=$("nai").value.trim().toLowerCase(),nick=$("nan").value.trim(),pw=$("nap").value;
+  $("merr").textContent=$("mok").textContent="";
+  if(!idOk(id)){$("merr").textContent="아이디는 영문 소문자, 숫자, _ 로 4~20자여야 해요.";return}
+  if(nick.length<2||nick.length>12){$("merr").textContent="닉네임은 2~12자여야 해요.";return}
+  if(pw.length<8){$("merr").textContent="비밀번호는 8자 이상이어야 해요.";return}
+  try{
+    var tmp=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}});
+    var r=await tmp.auth.signUp({email:id+DOMAIN,password:pw,options:{data:{game_username:id,game_nickname:nick}}});
+    if(r.error||!r.data.user||!(r.data.user.identities||[]).length){$("merr").textContent="계정을 만들지 못했어요. 이미 사용 중인 아이디일 수 있어요.";return}
+    chk(await sb.from("game_admins").insert({user_id:r.data.user.id}));
+    $("nai").value=$("nan").value=$("nap").value="";$("mok").textContent="어드민 아이디를 만들었어요.";loadMembers();
+  }catch(e){lost(e,$("merr"))}
+};
+
+/* ================= 문의 ================= */
 function renderInquiry(){
   if(selApp)selApp=apps.filter(function(a){return a.id===selApp.id})[0]||null;
   var g=$("ipg");g.textContent="";
-  if(selApp){
-    $("ipick").classList.add("hide");$("iform").classList.remove("hide");
-    $("iic").textContent=selApp.i;$("inm").textContent=selApp.n;return;
-  }
-  $("iform").classList.add("hide");$("ipick").classList.remove("hide");
+  if(selApp){hide("ipick");show("iform");$("iic").textContent=selApp.i;$("inm").textContent=selApp.n;return}
+  hide("iform");show("ipick");
   apps.forEach(function(a){
     var b=mk("button","pick"),tx=mk("div","tx");tx.appendChild(mk("b","",a.n));tx.appendChild(mk("span","",a.d));
     b.appendChild(mk("div","ic",a.i));b.appendChild(tx);b.appendChild(mk("div","go","›"));
-    b.onclick=function(){selApp=a;$("iok").textContent=$("ierr2").textContent="";renderInquiry()};
+    b.onclick=function(){selApp=a;$("iok").textContent=$("ierr2").textContent="";if(me&&!$("iname").value)$("iname").value=me.nickname;renderInquiry()};
     g.appendChild(b);
   });
 }
@@ -338,7 +711,7 @@ $("iback").onclick=function(){selApp=null;renderInquiry()};
 $("isend").onclick=async function(){
   var msg=$("itext").value.trim();
   $("iok").textContent=$("ierr2").textContent="";
-  if(!selApp||!sb)return;
+  if(!selApp)return;
   if(!msg){$("ierr2").textContent="문의 내용을 입력해 주세요.";return}
   if(Date.now()-lastSend<10000){$("ierr2").textContent="잠시 후 다시 보내 주세요.";return}
   var ok=await run(sb.from("game_inquiries").insert({app_id:selApp.id,app_name:selApp.n,name:$("iname").value.trim().slice(0,30),message:msg.slice(0,1000)}),$("ierr2"));
@@ -352,7 +725,7 @@ function renderInq(){
     var cur=apps.filter(function(a){return a.id===q.appId})[0];
     var r=mk("div","row inq"),h=mk("div","ihead");
     h.appendChild(mk("b","",cur?cur.n:q.appName+" (삭제된 게임)"));
-    h.appendChild(mk("span","muted",(q.name||"익명")+" · "+new Date(q.ts).toLocaleString("ko-KR")));
+    h.appendChild(mk("span","muted",(q.name||"익명")+" · "+fmt(q.ts)));
     r.appendChild(h);r.appendChild(mk("p","imsg",q.msg));
     var d=mk("button","del","삭제");
     d.onclick=async function(){
@@ -363,86 +736,52 @@ function renderInq(){
   });
 }
 async function loadInqs(){
-  if(!authed)return;
+  if(!isAdmin||!adminOk)return;
   try{
     inqs=chk(await sb.from("game_inquiries").select("*").order("created_at",{ascending:false})).map(function(r){return{id:r.id,appId:r.app_id,appName:r.app_name,name:r.name,msg:r.message,ts:Date.parse(r.created_at)}});
     $("ierr").textContent="";renderInq();
   }catch(e){lost(e,$("ierr"))}
 }
 
-/* 최신 데이터 불러오기 (다른 기기의 변경 반영) */
+/* ================= 데이터 새로고침 / 라우팅 ================= */
 async function refresh(){
-  if(!sb){$("grid").textContent="";$("grid").appendChild(mk("div","muted","index.html 맨 위의 Supabase URL과 키를 먼저 넣어 주세요."));return}
   try{
     apps=chk(await sb.from("game_apps").select("*").order("position").order("created_at")).map(mapApp);
     notices=chk(await sb.from("game_notices").select("*")).map(function(r){return{id:r.id,date:r.date,title:r.title,body:r.body,ts:Date.parse(r.created_at)}});
     renderHome();renderNotices();
     if(!$("inquiry").classList.contains("hide"))renderInquiry();
-    if(authed){if(editing<0)renderAdmin();renderNoticeAdmin();renderInq()}
+    if(isAdmin&&adminOk){if(editing<0)renderAdmin();renderNoticeAdmin();renderInq()}
   }catch(e){if(!apps.length){$("grid").textContent="";$("grid").appendChild(mk("div","muted","데이터를 불러오지 못했어요."))}}
 }
-
-/* 로그인 / 로그아웃 */
-function leaveAdmin(){
-  if(authed){authed=false;editing=-1;if(sb)sb.auth.signOut()}
-  clearInterval(timer);timer=null;
-}
-$("lf").addEventListener("submit",async function(e){
-  e.preventDefault();
-  var em=$("em").value,pw=$("pw").value;
-  $("em").value="";$("pw").value="";
-  if(!sb){$("lerr").textContent="Supabase 설정이 필요해요.";return}
-  var now=Date.now();
-  if(now<lockUntil){$("lerr").textContent="잠시 후 다시 시도해 주세요. ("+Math.ceil((lockUntil-now)/1000)+"초)";return}
-  var ok=false;
-  try{
-    var r=await sb.auth.signInWithPassword({email:em.trim(),password:pw});
-    if(!r.error){
-      var a=await sb.from("admins").select("user_id").maybeSingle();
-      if(a.data)ok=true;else await sb.auth.signOut();
-    }
-  }catch(x){}
-  em=pw="";
-  if(ok){fails=0;authed=true;route()}
-  else{fails++;$("lerr").textContent="이메일 또는 비밀번호가 올바르지 않습니다.";if(fails>=5){lockUntil=Date.now()+30000;fails=0}}
-});
-$("logout").onclick=function(){location.hash="#/"};
-$("home2").onclick=function(){location.hash="#/"};
-$("mkadmin").onclick=async function(){
-  $("merr").textContent=$("mok").textContent="";
-  if(!authed)return;
-  var em=$("ne").value.trim().toLowerCase(),pw=$("np").value;
-  if(!/^\S+@\S+\.\S+$/.test(em)){$("merr").textContent="이메일 형식이 올바르지 않습니다.";return}
-  if(pw.length<8){$("merr").textContent="비밀번호는 8자 이상이어야 합니다.";return}
-  try{
-    var tmp=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY,OPT);   // 현재 로그인에 영향 없는 별도 클라이언트
-    var r=await tmp.auth.signUp({email:em,password:pw});
-    if(r.error||!r.data.user||!(r.data.user.identities||[]).length){$("merr").textContent="계정을 만들지 못했어요. 이미 가입된 이메일일 수 있어요.";return}
-    chk(await sb.from("admins").insert({user_id:r.data.user.id}));
-    $("ne").value=$("np").value="";$("mok").textContent="어드민 아이디를 만들었어요. 바로 로그인할 수 있어요.";
-  }catch(e){lost(e,$("merr"))}
+$("rgo").onclick=async function(){
+  var pw=$("rpw").value;$("rpw").value="";$("rerr").textContent="";
+  if(Date.now()<lockUntil){$("rerr").textContent="잠시 후 다시 시도해 주세요.";return}
+  if(!me||!pw)return;
+  var r=await sb.auth.signInWithPassword({email:me.username+DOMAIN,password:pw});
+  if(r.error){fails++;if(fails>=5){lockUntil=Date.now()+30000;fails=0}$("rerr").textContent="비밀번호가 올바르지 않습니다.";return}
+  fails=0;adminOk=true;route();
 };
-
-/* 라우팅 */
 function route(){
   var h=location.hash;
-  ["home","login","admin","inquiry","notice"].forEach(function(id){$(id).classList.add("hide")});
+  ["home","notice","inquiry","reauth","admin"].forEach(hide);
+  clearInterval(timer);timer=null;
   if(h==="#/admin"){
-    if(authed){
-      $("admin").classList.remove("hide");renderAdmin();renderNoticeAdmin();renderInq();$("ndate").value=today();loadInqs();
-      if(!timer)timer=setInterval(loadInqs,20000);
-    }else{$("login").classList.remove("hide");$("em").value="";$("pw").value="";$("lerr").textContent=""}
-  }else if(h==="#/notice"){$("notice").classList.remove("hide");renderNotices();refresh()}
-  else if(h==="#/inquiry"){$("inquiry").classList.remove("hide");selApp=null;renderInquiry();refresh()}
-  else{$("home").classList.remove("hide");refresh()}
+    if(!isAdmin){location.hash="#/";return}
+    if(adminOk){
+      show("admin");renderAdmin();renderNoticeAdmin();renderInq();$("ndate").value=today();loadMembers();loadInqs();
+      timer=setInterval(loadInqs,20000);
+    }else{show("reauth");$("rpw").value="";$("rerr").textContent=""}
+  }else if(h==="#/notice"){show("notice");renderNotices();refresh()}
+  else if(h==="#/inquiry"){show("inquiry");selApp=null;renderInquiry();refresh()}
+  else{show("home");refresh()}
   window.scrollTo(0,0);
 }
 window.addEventListener("hashchange",function(){
-  if(location.hash!=="#/admin")leaveAdmin();
+  if(location.hash!=="#/admin")adminOk=false;
   route();
 });
 setInterval(refresh,20000);
-route();
+loadMe().then(function(){refresh();route()});
 })();
 </script>
 </body>
