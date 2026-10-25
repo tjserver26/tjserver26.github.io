@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TJ 클릭 챌린지</title>
+<style>
+body{margin:0;background:#0a0918;color:#f2f0ff;font-family:system-ui,"Noto Sans KR",sans-serif;display:grid;place-items:center;min-height:100vh;text-align:center}
+h1{margin:0 0 6px}p{color:#9d99cc;margin:6px 0}
+button{font:inherit;cursor:pointer;border:0;border-radius:14px;padding:12px 22px;font-weight:700;background:#1d1a3f;color:#f2f0ff;font-size:16px}
+button.on{outline:3px solid #00e5ff}
+#big{width:200px;height:200px;border-radius:50%;font-size:28px;background:linear-gradient(135deg,#7b5cf5,#00b8d9);margin:18px 0}
+.row{display:flex;gap:12px;justify-content:center;margin:14px 0}
+#res{font-size:20px;font-weight:700;min-height:28px}
+</style>
+</head>
+<body>
+<div>
+  <h1>⚡ 클릭 챌린지</h1>
+  <p id="info">난이도를 고르고 큰 버튼을 눌러 시작하세요</p>
+  <div class="row"><button id="e" class="on">easy (10초)</button><button id="h">hard (5초)</button></div>
+  <button id="big">시작</button>
+  <p id="res"></p>
+</div>
+<script>
+var mode="easy",secs=10,clicks=0,playing=false,timer=null,left=0;
+function $(id){return document.getElementById(id)}
+function pick(m,s){if(playing)return;mode=m;secs=s;$("e").classList.toggle("on",m==="easy");$("h").classList.toggle("on",m==="hard")}
+$("e").onclick=function(){pick("easy",10)};$("h").onclick=function(){pick("hard",5)};
+$("big").onclick=function(){
+  if(!playing){playing=true;clicks=0;left=secs;$("res").textContent="";$("big").textContent="0";$("info").textContent="남은 시간 "+left+"초";
+    timer=setInterval(function(){left--;$("info").textContent="남은 시간 "+left+"초";if(left<=0)finish()},1000);
+  }else{clicks++;$("big").textContent=clicks}
+};
+function finish(){
+  clearInterval(timer);playing=false;
+  var score=clicks*10;
+  $("res").textContent="점수 "+score+"점 ("+mode+")";$("info").textContent="다시 하려면 큰 버튼을 누르세요";$("big").textContent="시작";
+  parent.postMessage({type:"tj-score",score:score,mode:mode,data:{clicks:clicks}},"*");
+}
+</script>
+</body>
+</html>
