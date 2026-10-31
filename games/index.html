@@ -131,6 +131,7 @@ button:disabled{opacity:.35;cursor:default}
 #ranking .tabs{margin-right:0}
 .gr{font-family:Orbitron,sans-serif;font-weight:900;min-width:44px;text-align:center;padding:6px 10px;border-radius:10px;font-size:18px;flex:none}
 .gS{background:linear-gradient(135deg,#ff4fd8,#7b5cf5);color:#fff;box-shadow:0 0 14px rgba(255,79,216,.5)}
+.gF{background:#2b2f45;color:#ff5d73;border:1px solid #ff5d73}
 .gA{background:#ff5d73;color:#fff}.gB{background:#ffb020;color:#1a1200}.gC{background:#2ecc9a;color:#04261c}.gD{background:#4a4f6a;color:#fff}
 .two2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
 .rkrow{display:flex;align-items:center;gap:12px}
@@ -166,7 +167,7 @@ button:disabled{opacity:.35;cursor:default}
   <div class="bar"><h1>랭킹</h1><a class="adminlink" href="#/">홈으로</a></div>
   <div class="seasonbar"><button class="ghost sm" id="rkprev" aria-label="이전 달">◀</button><b id="rklabel"></b><span class="badge" id="rkpill"></span><button class="ghost sm" id="rknext" aria-label="다음 달">▶</button><button class="ghost sm" id="rkall">전체 기간</button></div>
   <div class="tabs"><button class="ghost on" id="rtab1">전체 랭킹</button><button class="ghost" id="rtab2">게임별 랭킹</button></div>
-  <div id="rk1"><p class="muted">게임별 최고 기록의 등급 점수를 합산해요. (S 100 · A 60 · B 30 · C 10)</p><div class="list" id="rklist1"></div></div>
+  <div id="rk1"><p class="muted">게임별 최고 기록의 등급 점수를 합산해요. (S 100 · A 60 · B 30 · C 10 · D 5)</p><div class="list" id="rklist1"></div></div>
   <div id="rk2" class="hide"><div class="two2"><select id="rkgame" aria-label="게임"></select><select id="rkmode" aria-label="모드"></select></div><div class="list" id="rklist2"></div></div>
 </section>
 
@@ -205,6 +206,7 @@ button:disabled{opacity:.35;cursor:default}
     <input id="nd" placeholder="설명" style="margin-top:12px" aria-label="설명">
     <input id="nu" placeholder="주소 (예: example.com)" style="margin-top:12px" aria-label="주소">
     <textarea id="ng" rows="3" style="margin-top:12px" aria-label="등급 기준"></textarea>
+    <div class="two2" style="margin-top:12px"><select id="nord" aria-label="점수 기준"><option value="desc">높을수록 좋음</option><option value="asc">낮을수록 좋음</option></select><input id="nunit" placeholder="점수 단위 (기본: 점, 예: ms, 초)" maxlength="6" aria-label="점수 단위"></div>
     <button class="full" id="addapp">게임 추가</button>
     <div class="err" id="aerr"></div>
   </div>
@@ -360,7 +362,7 @@ function safeUrl(u){return normUrl(u)||""}
 function today(){var d=new Date();return d.getFullYear()+"-"+("0"+(d.getMonth()+1)).slice(-2)+"-"+("0"+d.getDate()).slice(-2)}
 function fmt(ts){return new Date(ts).toLocaleString("ko-KR")}
 function idOk(s){return /^[a-z0-9_]{4,20}$/.test(s)}
-function mapApp(r){return{id:r.id,i:r.icon,n:r.name,d:r.description,u:r.url,p:r.position,g:r.grades||{}}}
+function mapApp(r){return{id:r.id,i:r.icon,n:r.name,d:r.description,u:r.url,p:r.position,g:r.grades||{},o:r.score_order||"desc",un:r.score_unit||"점"}}
 function avEl(src,name,cls){
   var d=mk("div",cls);
   if(src&&src.indexOf("data:image/")===0){var i=document.createElement("img");i.alt="";i.src=src;d.appendChild(i)}
@@ -493,7 +495,7 @@ $("plogout").onclick=async function(){
 };
 function recRow(r,onDel){
   var row=mk("div","row mrow"),tx=mk("div","tx"),b=mk("b","",r.game_name);
-  if(r.kind==="score")b.appendChild(mk("span","badge",(r.mode&&r.mode!=="기본"?r.mode+" · ":"")+Number(r.score).toLocaleString()+"점"));
+  if(r.kind==="score")b.appendChild(mk("span","badge",(r.mode&&r.mode!=="기본"?r.mode+" · ":"")+fmtScore(appById(r.game_id),r.score)));
   else b.appendChild(mk("span","badge","플레이"));
   tx.appendChild(b);tx.appendChild(mk("span","",fmt(r.created_at)));row.appendChild(tx);
   if(onDel){var d=mk("button","del sm","삭제");d.onclick=function(){onDel(r)};row.appendChild(d)}
@@ -521,7 +523,7 @@ function renderSummary(rows){
     if(r.g_mode&&r.g_mode!=="기본")b.appendChild(mk("span","badge",r.g_mode));
     tx.appendChild(b);
     var sub=r.best_score===null?"플레이 "+r.plays+"회 · 아직 점수 기록이 없어요"
-      :"최고 "+Number(r.best_score).toLocaleString()+"점"+(r.rnk?" · "+r.rnk+"위 / "+r.players+"명":"")+(Number(r.plays)?" · 플레이 "+r.plays+"회":"");
+      :"최고 "+fmtScore(appById(r.g_id),r.best_score)+(r.rnk?" · "+r.rnk+"위 / "+r.players+"명":"")+(Number(r.plays)?" · 플레이 "+r.plays+"회":"");
     tx.appendChild(mk("span","",sub));
     row.appendChild(mk("div","ic",r.g_icon));row.appendChild(tx);
     if(r.grade)row.appendChild(mk("div","gr g"+r.grade,r.grade));
@@ -538,21 +540,29 @@ async function loadMyRecs(){
 }
 
 /* ================= 시즌 / 등급 / 랭킹 ================= */
-var GRADE_HINT="등급 기준 (선택) — 줄마다 '모드: S점수, A점수, B점수, C점수'\n예) 기본: 3000, 2000, 1000, 300\n예) hard: 5000, 3000, 1500, 500";
-var GRADE_ERR="등급 기준 형식이 올바르지 않아요. 줄마다 '모드: S, A, B, C' 점수를 큰 순서로 적어 주세요. 예) hard: 5000, 3000, 1500, 500";
-function parseGrades(txt){
+var GRADE_HINT="등급 기준 (선택) — 줄마다 '모드: S, A, B, C, D 점수' (4개만 쓰면 D 아래는 D, 5개를 쓰면 D 아래는 F)\n예) 기본: 3000, 2000, 1000, 300, 100\n낮을수록 좋은 게임은 작은 수부터: 기본: 200, 250, 300, 400, 600";
+var GRADE_ERR="등급 기준 형식이 올바르지 않아요. 줄마다 '모드: S, A, B, C(, D)' 점수 4~5개를 순서대로 적어 주세요. (높을수록 좋은 게임은 큰 수부터, 낮을수록 좋은 게임은 작은 수부터)";
+function mono(v,ord){for(var i=1;i<v.length;i++){if(ord==="asc"?v[i]<v[i-1]:v[i]>v[i-1])return false}return true}
+function parseGrades(txt,ord){
   var o={},ok=true;
   String(txt||"").split("\n").forEach(function(line){
     line=line.trim().replace("：",":");if(!line)return;
     var i=line.indexOf(":");if(i<1){ok=false;return}
     var k=line.slice(0,i).trim(),v=line.slice(i+1).split(",").map(function(x){return x.trim()===""?NaN:Number(x.trim())});
-    if(!k||k.length>20||v.length!==4||v.some(function(n){return !isFinite(n)||n<0})||!(v[0]>=v[1]&&v[1]>=v[2]&&v[2]>=v[3])){ok=false;return}
+    if(!k||k.length>20||(v.length!==4&&v.length!==5)||v.some(function(n){return !isFinite(n)||n<0})||!mono(v,ord)){ok=false;return}
     o[k]=v;
   });
   return ok?o:null;
 }
 function gradesText(g){return Object.keys(g||{}).map(function(k){return k+": "+g[k].join(", ")}).join("\n")}
-function gradeOf(g,mode,s){var t=g&&g[mode];if(!t||t.length<4)return null;return s>=t[0]?"S":s>=t[1]?"A":s>=t[2]?"B":s>=t[3]?"C":"D"}
+function gradeOf(g,mode,s,ord){
+  var t=g&&g[mode];if(!t||t.length<4)return null;
+  var L=["S","A","B","C","D"];
+  for(var i=0;i<t.length;i++){if(ord==="asc"?s<=t[i]:s>=t[i])return L[i]}
+  return t.length===4?"D":"F";
+}
+function appById(id){return apps.filter(function(a){return a.id===id})[0]}
+function fmtScore(app,n){return Number(n).toLocaleString()+((app&&app.un)||"점")}
 function cur(){return new Date(Date.now()+9*3600000).toISOString().slice(0,7)}   // 한국 시간 기준 이번 달
 var seasons={pk:cur(),rk:cur()};
 function seasonLabel(s){return s==="all"?"전체 기간":s.slice(0,4)+"년 "+Number(s.slice(5))+"월 시즌"}
@@ -608,9 +618,9 @@ async function loadRanking(){
       var rs=chk(await sb.rpc("game_leaderboard",{p_game:gid,p_mode:mode,p_season:seasons.rk}));b2.textContent="";
       if(!rs.length){b2.appendChild(mk("div","muted","아직 기록이 없어요."));return}
       rs.forEach(function(r){
-        var row=mk("div","row rkrow"+(r.is_me?" me":"")),tx=mk("div","tx"),sc=Number(r.best_score),gd=gradeOf(app&&app.g,mode,sc);
+        var row=mk("div","row rkrow"+(r.is_me?" me":"")),tx=mk("div","tx"),sc=Number(r.best_score),gd=r.grade||gradeOf(app&&app.g,mode,sc,app&&app.o);
         row.appendChild(mk("div","rkno",medal(Number(r.rnk))));
-        tx.appendChild(mk("b","",r.nickname+(r.is_me?" (나)":"")));tx.appendChild(mk("span","",sc.toLocaleString()+"점"));
+        tx.appendChild(mk("b","",r.nickname+(r.is_me?" (나)":"")));tx.appendChild(mk("span","",fmtScore(app,sc)));
         row.appendChild(tx);if(gd)row.appendChild(mk("div","gr g"+gd,gd));b2.appendChild(row);
       });
     }catch(e){b2.textContent="랭킹을 불러오지 못했어요."}
@@ -642,16 +652,85 @@ function openGame(a){
 }
 function closeGame(){playing=null;$("pframe").src="about:blank";hide("player");document.body.style.overflow=""}
 $("pclose").onclick=closeGame;
+/* ===== 점수 저장 (게임이 보내거나, 같은 사이트 게임에서 자동으로 읽어요) ===== */
+function saveScore(r){
+  if(!playing||!me)return;
+  var sc=Number(r.score);
+  if(!isFinite(sc)||sc<0||Date.now()-lastScore<1000)return;
+  lastScore=Date.now();
+  var mode=(typeof r.mode==="string"&&r.mode.trim())?r.mode.trim().slice(0,20):"기본";
+  var grade=/^[SABCDF]$/.test(r.grade||"")?r.grade:null;
+  var data={};try{if(r.data&&typeof r.data==="object"&&JSON.stringify(r.data).length<2000)data=r.data}catch(x){}
+  var app=playing;
+  sb.from("game_records").insert({user_id:me.id,game_id:app.id,game_name:app.n,kind:"score",score:sc,mode:mode,grade:grade,data:data})
+    .then(function(res){
+      var gd=grade||gradeOf(app.g,mode,sc,app.o);
+      $("pstat").textContent=res.error?"기록 저장 실패":"기록 저장됨 ✓ "+fmtScore(app,sc)+(gd?" · "+gd+"등급":"");
+    });
+}
 window.addEventListener("message",function(e){
   if(!playing||e.source!==$("pframe").contentWindow)return;
   var d=e.data;if(!d||d.type!=="tj-score")return;
-  var sc=Number(d.score);
-  if(!me||!isFinite(sc)||sc<0||Date.now()-lastScore<1000)return;
-  var mode=(typeof d.mode==="string"&&d.mode.trim())?d.mode.trim().slice(0,20):"기본";
-  lastScore=Date.now();
-  var data={};try{if(d.data&&typeof d.data==="object"&&JSON.stringify(d.data).length<2000)data=d.data}catch(x){}
-  sb.from("game_records").insert({user_id:me.id,game_id:playing.id,game_name:playing.n,kind:"score",score:sc,mode:mode,data:data})
-    .then(function(r){var gd=gradeOf(playing&&playing.g,mode,sc);$("pstat").textContent=r.error?"기록 저장 실패":"기록 저장됨 ✓ "+sc.toLocaleString()+"점"+(gd?" · "+gd+"등급":"")});
+  saveScore({score:d.score,mode:d.mode,grade:d.grade,data:d.data});
+});
+
+/* 같은 사이트(tjserver26.github.io)의 게임은 결과 화면에서 점수를 자동으로 읽어요 */
+function num(s){var m=String(s||"").replace(/,/g,"").match(/-?\d+(\.\d+)?/);return m?parseFloat(m[0]):null}
+function tx(d,sel){var e=d.querySelector(sel);return e?e.textContent.trim():""}
+function letter(s){var c=String(s||"").trim().charAt(0).toUpperCase();return "SABCDF".indexOf(c)>=0&&c?c:null}
+function cleanMode(s){s=String(s||"").replace(/[^\p{L}\p{N} ·]/gu,"").replace(/\s*모드\s*$/,"").replace(/\s+/g," ").trim().slice(0,20);return s||"기본"}
+function pickName(s,map){for(var k in map){if(String(s).indexOf(k)>=0)return map[k]}return null}
+function onShow(d,sel,isOn,fn,delay){
+  var el=d.querySelector(sel);if(!el)return;
+  var was=isOn(el);
+  new MutationObserver(function(){var now=isOn(el);if(now&&!was)setTimeout(fn,delay||0);was=now})
+    .observe(el,{attributes:true,attributeFilter:["class","hidden","style"]});
+}
+function onText(d,sel,fn){var el=d.querySelector(sel);if(!el)return;new MutationObserver(function(){fn()}).observe(el,{childList:true,characterData:true,subtree:true})}
+function hasCls(c){return function(e){return e.classList.contains(c)}}
+function noCls(c){return function(e){return !e.classList.contains(c)}}
+var ADAPT={
+  "car-dodge":function(d){onShow(d,"#over",hasCls("on"),function(){
+    saveScore({score:num(tx(d,"#rs")),mode:cleanMode(tx(d,"#rf")),grade:letter(tx(d,"#gr")),data:{time:tx(d,"#rt"),distance:tx(d,"#rd")}})})},
+  "color-trap":function(d){onShow(d,"#sEnd",hasCls("on"),function(){
+    saveScore({score:num(tx(d,"#rScore")),mode:cleanMode(tx(d,"#rMode")),grade:letter(tx(d,"#rGrade")),data:{acc:tx(d,"#rAcc"),combo:tx(d,"#rCombo")}})})},
+  "memory-challenge":function(d){onShow(d,"#result",noCls("hide"),function(){
+    saveScore({score:num(tx(d,"#oScore")),mode:"기본",grade:letter(tx(d,"#grade")),data:{stage:tx(d,"#oStage"),time:tx(d,"#oTime")}})})},
+  "number-touch":function(d){onShow(d,"#result",hasCls("on"),function(){
+    var t=num(tx(d,"#rtime")),miss=num(tx(d,"#rmiss"))||0;
+    if(t===null)return;
+    saveScore({score:Math.round((t+miss)*1000)/1000,mode:cleanMode(tx(d,"#rlv")),grade:letter(tx(d,"#grade")),data:{time:t,miss:miss}})})},
+  "odd-character":function(d){onShow(d,"#result",hasCls("on"),function(){
+    var m=tx(d,"#rmode");
+    saveScore({score:num(tx(d,"#stats div:first-child b")),mode:cleanMode(m),grade:letter(tx(d,"#grade")),data:{}})})},
+  "typing-battle":function(d){onShow(d,"#result",hasCls("on"),function(){
+    var rt=tx(d,"#rt"),i=rt.lastIndexOf(" · ");
+    saveScore({score:num(tx(d,"#cs")),mode:cleanMode(i>0?rt.slice(0,i):rt),grade:letter(tx(d,"#gr")),data:{time:i>0?rt.slice(i+3):""}})},1300)},
+  "cps-test":function(d){onShow(d,"#result",noCls("hide"),function(){
+    var g=pickName(tx(d,"#aName"),{"매":"S","치타":"A","말":"B","토끼":"C","닭":"D","거북이":"F","달팽이":"F"});
+    saveScore({score:num(tx(d,"#oAvg")),mode:cleanMode(tx(d,"#oMode")),grade:g,data:{clicks:num(tx(d,"#oClicks")),peak:num(tx(d,"#oPeak"))}})})},
+  "reaction-test":function(d){onShow(d,"#summary",noCls("hidden"),function(){
+    var g=pickName(tx(d,"#grade"),{"치타":"S","토끼":"A","강아지":"B","판다":"C","거북이":"D","나무늘보":"F"});
+    saveScore({score:num(tx(d,"#avg")),mode:"기본",grade:g,data:{}})})},
+  "timing-test":function(d){onText(d,"#final-grade",function(){
+    saveScore({score:num(tx(d,"#stat-avg")),mode:"기본",grade:letter(tx(d,"#final-grade")),data:{best:tx(d,"#stat-best"),worst:tx(d,"#stat-worst")}})})},
+  "aim-trainer":function(d){onShow(d,"#result",function(e){return !e.hidden},function(){
+    var total=num(tx(d,"#rTotal")),chip=d.querySelector('.chip[aria-pressed="true"]'),inp=d.querySelector("#countInput");
+    var n=chip?Number(chip.dataset.n):Number(inp&&inp.value);
+    if(total===null||!n)return;
+    var per=total/n,g=per<0.55?"S":per<0.7?"A":per<0.9?"B":per<1.2?"C":per<1.6?"D":"F";
+    saveScore({score:total,mode:n+"개",grade:g,data:{acc:tx(d,"#rAcc"),miss:tx(d,"#rMiss")}})})}
+};
+$("pframe").addEventListener("load",function(){
+  if(!playing)return;
+  try{
+    var w=this.contentWindow,d=this.contentDocument;
+    if(!d||w.location.origin!==location.origin)return;
+    function folder(path){var s=path.split("/").filter(Boolean);if(s[s.length-1]==="index.html")s.pop();return s[s.length-1]||""}
+    var f=folder(w.location.pathname),want="";
+    try{want=folder(new URL(safeUrl(playing.u)).pathname)}catch(x){}
+    if(f&&f===want&&ADAPT[f])ADAPT[f](d);   // 열어 둔 게임과 같은 게임일 때만 연결
+  }catch(e){}
 });
 
 /* ================= 공지 ================= */
@@ -703,21 +782,24 @@ function renderAdmin(){
       var fn=field("게임 이름",a.n,"게임 이름");two.appendChild(fi);two.appendChild(fn);
       var fd=field("설명",a.d,"설명"),fu=field("주소 (예: example.com)",a.u,"주소");
       var fg=mk("textarea");fg.rows=3;fg.placeholder=GRADE_HINT;fg.value=gradesText(a.g);fg.setAttribute("aria-label","등급 기준");
+      var fo=mk("select");[["desc","높을수록 좋음"],["asc","낮을수록 좋음"]].forEach(function(x){var o=document.createElement("option");o.value=x[0];o.textContent=x[1];fo.appendChild(o)});fo.value=a.o||"desc";
+      var fun=field("점수 단위 (기본: 점)",a.un==="점"?"":a.un,"점수 단위");fun.maxLength=6;
+      var row2=mk("div","two2");row2.appendChild(fo);row2.appendChild(fun);
       var err=mk("div","err"),btns=mk("div","btns"),sv=mk("button","","저장");
       sv.onclick=async function(){
         var n=fn.value.trim(),u=normUrl(fu.value);
         if(!n){err.textContent="게임 이름을 입력해 주세요.";return}
         if(u===null){err.textContent="사용할 수 없는 주소입니다.";return}
-        var gr=parseGrades(fg.value);if(gr===null){err.textContent=GRADE_ERR;return}
-        if(await run(sb.from("game_apps").update({icon:fi.value.trim()||"🎮",name:n,description:fd.value.trim(),url:u,grades:gr}).eq("id",a.id).select(),err,true)){editing=-1;await refresh()}
+        var ord=fo.value,gr=parseGrades(fg.value,ord);if(gr===null){err.textContent=GRADE_ERR;return}
+        if(await run(sb.from("game_apps").update({icon:fi.value.trim()||"🎮",name:n,description:fd.value.trim(),url:u,grades:gr,score_order:ord,score_unit:fun.value.trim()||"점"}).eq("id",a.id).select(),err,true)){editing=-1;await refresh()}
       };
       var cn=mk("button","ghost","취소");cn.onclick=function(){editing=-1;renderAdmin()};
       btns.appendChild(sv);btns.appendChild(cn);
-      [two,fd,fu,fg,err,btns].forEach(function(x){wrap.appendChild(x)});r.appendChild(wrap);
+      [two,fd,fu,fg,row2,err,btns].forEach(function(x){wrap.appendChild(x)});r.appendChild(wrap);
     }else{
       var tx=mk("div","tx");tx.appendChild(mk("b","",a.n));tx.appendChild(mk("span","",a.d));
       if(a.u)tx.appendChild(mk("span","url",a.u));
-      if(Object.keys(a.g||{}).length)tx.appendChild(mk("span","url","등급 기준: "+Object.keys(a.g).join(", ")));
+      if(Object.keys(a.g||{}).length)tx.appendChild(mk("span","url","등급 기준: "+Object.keys(a.g).join(", ")+(a.o==="asc"?" (낮을수록 좋음)":"")));
       var ed=mk("button","ghost sm","수정");ed.onclick=function(){editing=idx;renderAdmin()};
       var d=mk("button","del","빼기");
       d.onclick=async function(){
@@ -731,12 +813,12 @@ function renderAdmin(){
 }
 $("ng").placeholder=GRADE_HINT;
 $("addapp").onclick=async function(){
-  var n=$("nn").value.trim(),i=$("ni").value.trim()||"🎮",d=$("nd").value.trim(),u=normUrl($("nu").value),gr=parseGrades($("ng").value);
+  var n=$("nn").value.trim(),i=$("ni").value.trim()||"🎮",d=$("nd").value.trim(),u=normUrl($("nu").value),ord=$("nord").value,gr=parseGrades($("ng").value,ord);
   if(!n){$("aerr").textContent="게임 이름을 입력해 주세요.";return}
   if(u===null){$("aerr").textContent="사용할 수 없는 주소입니다.";return}
   if(gr===null){$("aerr").textContent=GRADE_ERR;return}
   var pos=apps.reduce(function(m,a){return Math.max(m,a.p||0)},-1)+1;
-  if(await run(sb.from("game_apps").insert({icon:i,name:n,description:d,url:u,position:pos,grades:gr}),$("aerr"))){$("nn").value=$("ni").value=$("nd").value=$("nu").value=$("ng").value=""}
+  if(await run(sb.from("game_apps").insert({icon:i,name:n,description:d,url:u,position:pos,grades:gr,score_order:ord,score_unit:$("nunit").value.trim()||"점"}),$("aerr"))){$("nn").value=$("ni").value=$("nd").value=$("nu").value=$("ng").value=$("nunit").value=""}
   await refresh();
 };
 
