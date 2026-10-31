@@ -138,6 +138,12 @@ button:disabled{opacity:.35;cursor:default}
 .rkno{width:44px;text-align:center;font-family:Orbitron,sans-serif;font-weight:900;font-size:18px;color:var(--neon);flex:none}
 .pts{font-family:Orbitron,sans-serif;font-weight:700;color:var(--neon);flex:none}
 .me{box-shadow:0 0 0 1px var(--neon),0 0 18px rgba(0,229,255,.25)}
+.tx span{word-break:keep-all}
+.rkrow{cursor:pointer;transition:transform .12s,box-shadow .12s}
+.rkrow:hover{transform:translateY(-2px);box-shadow:0 0 0 1px rgba(0,229,255,.6),0 8px 22px rgba(123,92,245,.3)}
+.rkrow:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.tx b span.badge{display:inline-block;margin:0 0 0 8px;padding:2px 9px;font-size:11px;line-height:1.5;vertical-align:middle;color:var(--neon);background:var(--tile)}
+.tx b span.badge.bad{color:var(--bad)}
 </style>
 </head>
 <body>
@@ -311,6 +317,16 @@ button:disabled{opacity:.35;cursor:default}
   </div>
 </div>
 
+<!-- 플레이어 기록 보기 -->
+<div id="plm" class="modal hide" role="dialog" aria-modal="true">
+  <div class="mbox wide">
+    <button class="x" id="plx" aria-label="닫기">✕</button>
+    <div class="avrow"><div class="av" id="plav"></div><div><h2 class="mt" id="plname"></h2><div class="muted" id="plsub"></div></div></div>
+    <div class="seasonbar" style="margin-top:16px"><button class="ghost sm" id="plprev" aria-label="이전 달">◀</button><b id="pllabel"></b><span class="badge" id="plpill"></span><button class="ghost sm" id="plnext" aria-label="다음 달">▶</button><button class="ghost sm" id="plall">전체 기간</button></div>
+    <div class="list" id="pllist"></div>
+  </div>
+</div>
+
 <!-- 게임 화면 -->
 <div id="player" class="hide">
   <div class="pbar">
@@ -429,7 +445,7 @@ $("doreg").onclick=async function(){
   closeAuth();
 };
 document.addEventListener("keydown",function(e){
-  if(e.key==="Escape"){["authm","profm","recm"].forEach(hide);if(playing)closeGame()}
+  if(e.key==="Escape"){["authm","profm","recm","plm"].forEach(hide);if(playing)closeGame()}
   if(e.key==="Enter"){
     if(!$("authm").classList.contains("hide")){($("rview").classList.contains("hide")?$("dologin"):$("doreg")).click()}
     else if(!$("reauth").classList.contains("hide"))$("rgo").click();
@@ -515,8 +531,8 @@ function renderRecs(box,sumBox,recs,onDel){
   if(!recs.length){box.appendChild(mk("div","muted","아직 게임 기록이 없어요."));return}
   recs.forEach(function(r){box.appendChild(recRow(r,onDel))});
 }
-function renderSummary(rows){
-  var box=$("plist");box.textContent="";
+function renderSummary(rows,target){
+  var box=target||$("plist");box.textContent="";
   if(!rows.length){box.appendChild(mk("div","muted","이 시즌의 게임 기록이 없어요."));return}
   rows.forEach(function(r){
     var row=mk("div","row mrow"),tx=mk("div","tx"),b=mk("b","",r.g_name);
@@ -564,7 +580,7 @@ function gradeOf(g,mode,s,ord){
 function appById(id){return apps.filter(function(a){return a.id===id})[0]}
 function fmtScore(app,n){return Number(n).toLocaleString()+((app&&app.un)||"점")}
 function cur(){return new Date(Date.now()+9*3600000).toISOString().slice(0,7)}   // 한국 시간 기준 이번 달
-var seasons={pk:cur(),rk:cur()};
+var seasons={pk:cur(),rk:cur(),pl:cur()},paints={};
 function seasonLabel(s){return s==="all"?"전체 기간":s.slice(0,4)+"년 "+Number(s.slice(5))+"월 시즌"}
 function shiftSeason(s,d){if(s==="all")return cur();var y=+s.slice(0,4),m=+s.slice(5)-1+d;y+=Math.floor(m/12);m=((m%12)+12)%12;return y+"-"+("0"+(m+1)).slice(-2)}
 function wireSeason(k,onChange){
@@ -576,8 +592,37 @@ function wireSeason(k,onChange){
   $(k+"prev").onclick=function(){seasons[k]=shiftSeason(seasons[k],-1);paint();onChange()};
   $(k+"next").onclick=function(){if(seasons[k]!=="all"&&seasons[k]<cur()){seasons[k]=shiftSeason(seasons[k],1);paint();onChange()}};
   $(k+"all").onclick=function(){seasons[k]=seasons[k]==="all"?cur():"all";paint();onChange()};
-  paint();
+  paints[k]=paint;paint();
 }
+function clickable(el,uid){
+  el.tabIndex=0;el.setAttribute("role","button");el.title="눌러서 기록 보기";
+  el.onclick=function(){openPlayer(uid)};
+  el.onkeydown=function(e){if(e.key==="Enter")openPlayer(uid)};
+  return el;
+}
+var curPlayer=null;
+function openPlayer(uid){
+  if(!uid)return;
+  curPlayer=uid;seasons.pl=seasons.rk;paints.pl();
+  setAv($("plav"),"","?");$("plname").textContent="";$("plsub").textContent="";
+  $("pllist").textContent="불러오는 중...";show("plm");loadPlayer();
+}
+async function loadPlayer(){
+  var uid=curPlayer;if(!uid)return;
+  try{
+    var prof=chk(await sb.rpc("player_profile",{p_user:uid}));
+    if(uid!==curPlayer)return;
+    if(!prof.length){$("pllist").textContent="";$("pllist").appendChild(mk("div","muted","플레이어 정보를 찾을 수 없어요."));return}
+    var p=prof[0];
+    setAv($("plav"),p.avatar,p.nickname);$("plname").textContent=p.nickname+(p.is_me?" (나)":"");
+    var ov=chk(await sb.rpc("player_overall",{p_user:uid,p_season:seasons.pl}));
+    var rows=chk(await sb.rpc("player_game_summary",{p_user:uid,p_season:seasons.pl}));
+    if(uid!==curPlayer)return;
+    $("plsub").textContent=ov.length?ov[0].rnk+"위 · "+Number(ov[0].points).toLocaleString()+" P · "+ov[0].games_played+"개 게임":"이 기간의 랭킹 기록이 없어요";
+    renderSummary(rows,$("pllist"));
+  }catch(e){$("pllist").textContent="불러오지 못했어요."}
+}
+$("plx").onclick=function(){hide("plm");curPlayer=null};
 function medal(n){return n===1?"🥇":n===2?"🥈":n===3?"🥉":String(n)}
 var rkTab=1;
 function rtabs(){
@@ -604,7 +649,7 @@ async function loadRanking(){
       var rows=chk(await sb.rpc("overall_ranking",{p_season:seasons.rk}));box.textContent="";
       if(!rows.length){box.appendChild(mk("div","muted","아직 랭킹이 없어요. 점수를 기록해 보세요!"));return}
       rows.forEach(function(r){
-        var row=mk("div","row rkrow"+(r.is_me?" me":"")),tx=mk("div","tx");
+        var row=clickable(mk("div","row rkrow"+(r.is_me?" me":"")),r.uid),tx=mk("div","tx");
         row.appendChild(mk("div","rkno",medal(Number(r.rnk))));
         tx.appendChild(mk("b","",r.nickname+(r.is_me?" (나)":"")));tx.appendChild(mk("span","",r.games_played+"개 게임"));
         row.appendChild(tx);row.appendChild(mk("div","pts",Number(r.points).toLocaleString()+" P"));box.appendChild(row);
@@ -618,7 +663,7 @@ async function loadRanking(){
       var rs=chk(await sb.rpc("game_leaderboard",{p_game:gid,p_mode:mode,p_season:seasons.rk}));b2.textContent="";
       if(!rs.length){b2.appendChild(mk("div","muted","아직 기록이 없어요."));return}
       rs.forEach(function(r){
-        var row=mk("div","row rkrow"+(r.is_me?" me":"")),tx=mk("div","tx"),sc=Number(r.best_score),gd=r.grade||gradeOf(app&&app.g,mode,sc,app&&app.o);
+        var row=clickable(mk("div","row rkrow"+(r.is_me?" me":"")),r.uid),tx=mk("div","tx"),sc=Number(r.best_score),gd=r.grade||gradeOf(app&&app.g,mode,sc,app&&app.o);
         row.appendChild(mk("div","rkno",medal(Number(r.rnk))));
         tx.appendChild(mk("b","",r.nickname+(r.is_me?" (나)":"")));tx.appendChild(mk("span","",fmtScore(app,sc)));
         row.appendChild(tx);if(gd)row.appendChild(mk("div","gr g"+gd,gd));b2.appendChild(row);
@@ -997,7 +1042,7 @@ window.addEventListener("hashchange",function(){
   if(location.hash!=="#/admin")adminOk=false;
   route();
 });
-wireSeason("pk",loadMyRecs);wireSeason("rk",loadRanking);
+wireSeason("pk",loadMyRecs);wireSeason("rk",loadRanking);wireSeason("pl",loadPlayer);
 setInterval(refresh,20000);
 loadMe().then(function(){refresh();route()});
 })();
