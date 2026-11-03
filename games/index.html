@@ -144,6 +144,45 @@ button:disabled{opacity:.35;cursor:default}
 .rkrow:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
 .tx b span.badge{display:inline-block;margin:0 0 0 8px;padding:2px 9px;font-size:11px;line-height:1.5;vertical-align:middle;color:var(--neon);background:var(--tile)}
 .tx b span.badge.bad{color:var(--bad)}
+.dock{flex-wrap:wrap;justify-content:flex-end;max-width:calc(100% - 28px)}
+.bdgs{display:inline-flex;gap:6px;flex-wrap:wrap;align-items:center}
+.bdg{font-size:20px;line-height:1;cursor:default}
+.tx b .bdgs{display:inline-flex;gap:3px;margin-left:8px;vertical-align:middle}
+.tx b .bdgs .bdg{display:inline;font-size:15px;margin:0;color:inherit}
+.achsum .pts{font-size:15px}
+.achhead{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap}
+.achbar{height:8px;border-radius:99px;background:#0e0c22;overflow:hidden;border:1px solid var(--line)}
+.achbar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#00e5ff,#7b5cf5,#ff4fd8);border-radius:99px;transition:width .7s ease}
+.cats{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 16px}
+.cats button.on{background:var(--accent);color:#fff}
+.achgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,300px),1fr));gap:14px}
+.acard{display:flex;gap:14px;padding:18px;border-radius:14px;border:1px solid transparent;background:linear-gradient(var(--card),var(--card)) padding-box,linear-gradient(135deg,rgba(0,229,255,.45),rgba(123,92,245,.45)) border-box}
+.acard.lock{opacity:.8}
+.acard.lock .aic{filter:grayscale(1) brightness(.75)}
+.acard.done{box-shadow:0 0 22px rgba(123,92,245,.32)}
+.aic{width:58px;height:58px;border-radius:14px;display:grid;place-items:center;font-size:30px;background:linear-gradient(135deg,#2b2070,#0f3a4a);box-shadow:inset 0 0 0 1px rgba(0,229,255,.25);flex:none}
+.abody{flex:1;min-width:0}
+.abody b{display:block;font-size:16px}
+.abody p{margin:4px 0 10px;color:var(--sub);font-size:13px;word-break:keep-all}
+.astat{margin-top:8px;font-size:12.5px;color:var(--sub)}
+.acard.done .astat{color:var(--neon)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chipb,.chipa{display:inline-flex;align-items:center;gap:6px;padding:7px 12px;border-radius:999px;background:var(--tile);color:var(--ink);border:1px solid var(--line);font-size:14px;font-weight:700}
+button.chipb{background:var(--tile);color:var(--ink)}
+.chipb.on{border-color:var(--neon);box-shadow:0 0 12px rgba(0,229,255,.35)}
+.chipb .co{background:var(--neon);color:#0a0918;border-radius:50%;width:18px;height:18px;display:grid;place-items:center;font-size:11px}
+.plh{font-weight:700;margin-bottom:8px;color:var(--neon);font-size:14px}
+#celeb{z-index:60;background:rgba(5,4,15,.88)}
+#confetti{position:fixed;inset:0;width:100%;height:100%;pointer-events:none}
+.cbox{position:relative;text-align:center;background:var(--card);border:1px solid rgba(0,229,255,.55);border-radius:20px;padding:28px 26px 22px;max-width:340px;width:100%;box-shadow:0 0 60px rgba(123,92,245,.55)}
+.cbox.pop{animation:cpop .55s cubic-bezier(.2,1.3,.4,1)}
+@keyframes cpop{0%{transform:scale(.4);opacity:0}100%{transform:scale(1);opacity:1}}
+.cl{font-family:Orbitron,"Noto Sans KR",sans-serif;color:var(--neon);letter-spacing:2px;font-size:13px;font-weight:700}
+.cic{font-size:72px;line-height:1.2;margin:10px 0;animation:cglow 1.6s ease-in-out infinite}
+@keyframes cglow{0%,100%{filter:drop-shadow(0 0 8px rgba(0,229,255,.5))}50%{filter:drop-shadow(0 0 22px rgba(255,79,216,.85))}}
+.cn{font-size:22px;font-weight:900}
+.cd{color:var(--sub);margin:6px 0 14px;font-size:14px;word-break:keep-all}
+@media (prefers-reduced-motion:reduce){.cbox.pop,.cic{animation:none}.achbar i{transition:none}}
 </style>
 </head>
 <body>
@@ -161,12 +200,23 @@ button:disabled{opacity:.35;cursor:default}
   <h2>▸ SELECT GAME</h2>
   <div class="grid" id="grid"></div>
   <footer>TJ Games · 2026</footer>
-  <div class="dock"><a class="fab" href="#/ranking">🏆 랭킹</a><a class="fab" href="#/notice">공지사항</a><a class="fab main" href="#/inquiry">문의</a></div>
+  <div class="dock"><a class="fab" href="#/achievements">🎖️ 업적</a><a class="fab" href="#/ranking">🏆 랭킹</a><a class="fab" href="#/notice">공지사항</a><a class="fab main" href="#/inquiry">문의</a></div>
 </section>
 
 <section id="notice" class="hide">
   <div class="bar"><h1>공지사항</h1><a class="adminlink" href="#/">홈으로</a></div>
   <div id="nlist"></div>
+</section>
+
+<section id="achievements" class="hide">
+  <div class="bar"><h1>업적</h1><a class="adminlink" href="#/">홈으로</a></div>
+  <div class="panel achsum">
+    <div class="achhead"><h2 style="margin:0">전체 달성률</h2><div><span class="pts" id="achcount"></span> · <b id="achpct"></b></div></div>
+    <div class="achbar" style="margin-top:12px"><i id="achfill"></i></div>
+    <div id="achlogin" class="hide" style="margin-top:14px"><span class="muted">로그인하면 업적이 계정에 저장되고 다른 기기에서도 이어져요.</span> <button class="sm" id="achlogbtn">로그인</button></div>
+  </div>
+  <div class="cats" id="achcats"></div>
+  <div class="achgrid" id="achgrid"></div>
 </section>
 
 <section id="ranking" class="hide">
@@ -283,7 +333,7 @@ button:disabled{opacity:.35;cursor:default}
 <div id="profm" class="modal hide" role="dialog" aria-modal="true">
   <div class="mbox wide">
     <button class="x" id="profx" aria-label="닫기">✕</button>
-    <div class="tabs"><button class="ghost on" id="tab1">내 정보</button><button class="ghost" id="tab2">게임 기록</button></div>
+    <div class="tabs"><button class="ghost on" id="tab1">내 정보</button><button class="ghost" id="tab2">게임 기록</button><button class="ghost" id="tab3">업적</button></div>
     <div id="p1">
       <div class="avrow">
         <div class="av" id="pav"></div>
@@ -294,6 +344,7 @@ button:disabled{opacity:.35;cursor:default}
       <label for="pnick">닉네임</label><input id="pnick" maxlength="12" autocomplete="off">
       <label for="pn1">새 비밀번호 (바꾸지 않으면 비워두세요)</label><input id="pn1" type="password" autocomplete="new-password">
       <label for="pn2">새 비밀번호 확인</label><input id="pn2" type="password" autocomplete="new-password">
+      <div class="bdgs" id="pbdg" style="margin:4px 0 0"></div>
       <div class="err" id="perr" role="alert"></div><div class="ok" id="pok"></div>
       <button class="full" id="psave">저장</button>
       <button class="ghost full" id="plogout">로그아웃</button>
@@ -304,6 +355,14 @@ button:disabled{opacity:.35;cursor:default}
       <div class="list" id="plist" style="margin-top:8px"></div>
       <h2 style="margin-top:22px">최근 기록</h2>
       <div class="list" id="precent"></div>
+    </div>
+    <div id="p3" class="hide">
+      <div class="achhead"><b id="p3sum"></b></div>
+      <p class="muted" style="margin:8px 0 12px">획득한 업적 중 <b>최대 3개</b>를 대표 배지로 골라 프로필과 랭킹에 보여주세요. 고른 순서대로 표시돼요.</p>
+      <div class="chips" id="p3chips"></div>
+      <div class="err" id="p3err" role="alert"></div><div class="ok" id="p3ok"></div>
+      <button class="full" id="p3save">대표 배지 저장</button>
+      <button class="ghost full" id="p3go" style="margin-top:8px">🎖️ 업적 페이지 보기</button>
     </div>
   </div>
 </div>
@@ -321,9 +380,24 @@ button:disabled{opacity:.35;cursor:default}
 <div id="plm" class="modal hide" role="dialog" aria-modal="true">
   <div class="mbox wide">
     <button class="x" id="plx" aria-label="닫기">✕</button>
-    <div class="avrow"><div class="av" id="plav"></div><div><h2 class="mt" id="plname"></h2><div class="muted" id="plsub"></div></div></div>
+    <div class="avrow"><div class="av" id="plav"></div><div><h2 class="mt" id="plname"></h2><div class="bdgs" id="plbdg"></div><div class="muted" id="plsub"></div></div></div>
+    <div id="plach" style="margin-top:14px"></div>
     <div class="seasonbar" style="margin-top:16px"><button class="ghost sm" id="plprev" aria-label="이전 달">◀</button><b id="pllabel"></b><span class="badge" id="plpill"></span><button class="ghost sm" id="plnext" aria-label="다음 달">▶</button><button class="ghost sm" id="plall">전체 기간</button></div>
     <div class="list" id="pllist"></div>
+  </div>
+</div>
+
+<!-- 업적 달성 축하 -->
+<div id="celeb" class="modal hide" role="dialog" aria-modal="true" aria-live="assertive">
+  <canvas id="confetti"></canvas>
+  <div class="cbox">
+    <div class="cl">🎉 업적 달성!</div>
+    <div class="cic" id="cic"></div>
+    <div class="cn" id="cname"></div>
+    <div class="cd" id="cdesc"></div>
+    <div class="muted" id="cmore" style="margin-bottom:10px"></div>
+    <button class="full" id="cok">확인</button>
+    <button class="ghost full sm hide" id="cskip" style="margin-top:8px">모두 닫기</button>
   </div>
 </div>
 
@@ -401,12 +475,13 @@ async function loadMe(){
     if(s){
       var p=chk(await sb.from("game_profiles").select("*").eq("user_id",s.user.id).maybeSingle());
       if(p&&!p.banned){
-        me={id:p.user_id,username:p.username,nickname:p.nickname,avatar:p.avatar};
+        me={id:p.user_id,username:p.username,nickname:p.nickname,avatar:p.avatar,badges:p.badges||[]};
         isAdmin=!!chk(await sb.from("game_admins").select("user_id").eq("user_id",s.user.id).maybeSingle());
       }else{await sb.auth.signOut();if(p&&p.banned)alert("정지된 계정입니다.")}
     }
   }catch(e){}
   renderTop();
+  if(me)claimNew();
 }
 function openAuth(){
   show("lview");hide("rview");$("lerr0").textContent=$("rerr0").textContent="";
@@ -445,7 +520,7 @@ $("doreg").onclick=async function(){
   closeAuth();
 };
 document.addEventListener("keydown",function(e){
-  if(e.key==="Escape"){["authm","profm","recm","plm"].forEach(hide);if(playing)closeGame()}
+  if(e.key==="Escape"){if(!$("celeb").classList.contains("hide"))skipCeleb();["authm","profm","recm","plm"].forEach(hide);if(playing)closeGame()}
   if(e.key==="Enter"){
     if(!$("authm").classList.contains("hide")){($("rview").classList.contains("hide")?$("dologin"):$("doreg")).click()}
     else if(!$("reauth").classList.contains("hide"))$("rgo").click();
@@ -458,19 +533,19 @@ function openProfile(){
   if(!me)return;
   pendingAvatar=null;
   setAv($("pav"),me.avatar,me.nickname);
-  $("pid").textContent="아이디: "+me.username;
+  $("pid").textContent="아이디: "+me.username;fillBadges($("pbdg"),me.badges);
   $("pnick").value=me.nickname;$("pn1").value=$("pn2").value="";
   $("perr").textContent=$("pok").textContent="";
   tab(1);show("profm");
 }
 function tab(n){
-  $("tab1").classList.toggle("on",n===1);$("tab2").classList.toggle("on",n===2);
-  $("p1").classList.toggle("hide",n!==1);$("p2").classList.toggle("hide",n!==2);
+  [1,2,3].forEach(function(i){$("tab"+i).classList.toggle("on",n===i);$("p"+i).classList.toggle("hide",n!==i)});
   if(n===2)loadMyRecs();
+  if(n===3)loadMyAch();
 }
 $("usericon").onclick=openProfile;
 $("profx").onclick=function(){hide("profm")};
-$("tab1").onclick=function(){tab(1)};$("tab2").onclick=function(){tab(2)};
+$("tab1").onclick=function(){tab(1)};$("tab2").onclick=function(){tab(2)};$("tab3").onclick=function(){tab(3)};
 $("pchoose").onclick=function(){$("pfile").click()};
 $("pdel").onclick=function(){pendingAvatar="";setAv($("pav"),"",$("pnick").value||me.nickname)};
 $("pfile").onchange=function(){
@@ -506,7 +581,7 @@ $("psave").onclick=async function(){
   $("pn1").value=$("pn2").value="";renderTop();$("pok").textContent="저장했어요.";
 };
 $("plogout").onclick=async function(){
-  await sb.auth.signOut();me=null;isAdmin=false;adminOk=false;hide("profm");renderTop();
+  await sb.auth.signOut();me=null;isAdmin=false;adminOk=false;achState=[];hide("profm");renderTop();
   if(location.hash==="#/admin")location.hash="#/";else route();
 };
 function recRow(r,onDel){
@@ -604,7 +679,7 @@ var curPlayer=null;
 function openPlayer(uid){
   if(!uid)return;
   curPlayer=uid;seasons.pl=seasons.rk;paints.pl();
-  setAv($("plav"),"","?");$("plname").textContent="";$("plsub").textContent="";
+  setAv($("plav"),"","?");$("plname").textContent="";$("plsub").textContent="";$("plbdg").textContent="";$("plach").textContent="";
   $("pllist").textContent="불러오는 중...";show("plm");loadPlayer();
 }
 async function loadPlayer(){
@@ -614,7 +689,7 @@ async function loadPlayer(){
     if(uid!==curPlayer)return;
     if(!prof.length){$("pllist").textContent="";$("pllist").appendChild(mk("div","muted","플레이어 정보를 찾을 수 없어요."));return}
     var p=prof[0];
-    setAv($("plav"),p.avatar,p.nickname);$("plname").textContent=p.nickname+(p.is_me?" (나)":"");
+    setAv($("plav"),p.avatar,p.nickname);$("plname").textContent=p.nickname+(p.is_me?" (나)":"");fillBadges($("plbdg"),p.badges);loadPlayerAch(uid);
     var ov=chk(await sb.rpc("player_overall",{p_user:uid,p_season:seasons.pl}));
     var rows=chk(await sb.rpc("player_game_summary",{p_user:uid,p_season:seasons.pl}));
     if(uid!==curPlayer)return;
@@ -651,7 +726,7 @@ async function loadRanking(){
       rows.forEach(function(r){
         var row=clickable(mk("div","row rkrow"+(r.is_me?" me":"")),r.uid),tx=mk("div","tx");
         row.appendChild(mk("div","rkno",medal(Number(r.rnk))));
-        tx.appendChild(mk("b","",r.nickname+(r.is_me?" (나)":"")));tx.appendChild(mk("span","",r.games_played+"개 게임"));
+        tx.appendChild(nameEl(r.nickname+(r.is_me?" (나)":""),r.badges));tx.appendChild(mk("span","",r.games_played+"개 게임"));
         row.appendChild(tx);row.appendChild(mk("div","pts",Number(r.points).toLocaleString()+" P"));box.appendChild(row);
       });
     }catch(e){box.textContent="랭킹을 불러오지 못했어요."}
@@ -665,7 +740,7 @@ async function loadRanking(){
       rs.forEach(function(r){
         var row=clickable(mk("div","row rkrow"+(r.is_me?" me":"")),r.uid),tx=mk("div","tx"),sc=Number(r.best_score),gd=r.grade||gradeOf(app&&app.g,mode,sc,app&&app.o);
         row.appendChild(mk("div","rkno",medal(Number(r.rnk))));
-        tx.appendChild(mk("b","",r.nickname+(r.is_me?" (나)":"")));tx.appendChild(mk("span","",fmtScore(app,sc)));
+        tx.appendChild(nameEl(r.nickname+(r.is_me?" (나)":""),r.badges));tx.appendChild(mk("span","",fmtScore(app,sc)));
         row.appendChild(tx);if(gd)row.appendChild(mk("div","gr g"+gd,gd));b2.appendChild(row);
       });
     }catch(e){b2.textContent="랭킹을 불러오지 못했어요."}
@@ -693,7 +768,7 @@ function openGame(a){
   show("player");document.body.style.overflow="hidden";
   if(url){hide("pmsg");$("pframe").classList.remove("hide");$("pframe").src=url;$("pnew").href=url;$("pnew").classList.remove("hide")}
   else{$("pframe").classList.add("hide");$("pnew").classList.add("hide");$("pmsg").textContent="아직 주소가 등록되지 않은 게임이에요.";show("pmsg")}
-  if(me&&url){sb.from("game_records").insert({user_id:me.id,game_id:a.id,game_name:a.n,kind:"play"}).then(function(){})}
+  if(me&&url){sb.from("game_records").insert({user_id:me.id,game_id:a.id,game_name:a.n,kind:"play"}).then(function(){claimNew()})}
 }
 function closeGame(){playing=null;$("pframe").src="about:blank";hide("player");document.body.style.overflow=""}
 $("pclose").onclick=closeGame;
@@ -710,6 +785,7 @@ function saveScore(r){
   sb.from("game_records").insert({user_id:me.id,game_id:app.id,game_name:app.n,kind:"score",score:sc,mode:mode,grade:grade,data:data})
     .then(function(res){
       var gd=grade||gradeOf(app.g,mode,sc,app.o);
+      if(!res.error)claimNew();
       $("pstat").textContent=res.error?"기록 저장 실패":"기록 저장됨 ✓ "+fmtScore(app,sc)+(gd?" · "+gd+"등급":"");
     });
 }
@@ -777,6 +853,152 @@ $("pframe").addEventListener("load",function(){
     if(f&&f===want&&ADAPT[f])ADAPT[f](d);   // 열어 둔 게임과 같은 게임일 때만 연결
   }catch(e){}
 });
+
+/* ================= 업적 ================= */
+var achCat=[],achState=[],achItems=[],celebQ=[],celebBusy=false,claiming=false,pickBadges=[],achFilter="all";
+var CAT_LABEL={all:"전체",play:"플레이",variety:"다양성",skill:"실력",special:"특별"};
+function achInfo(id){return achCat.filter(function(a){return a.id===id})[0]}
+function fmtDay(ts){return new Date(ts).toLocaleDateString("ko-KR",{year:"numeric",month:"long",day:"numeric"})}
+function fillBadges(box,ids){
+  box.textContent="";
+  (ids||[]).forEach(function(id){var a=achInfo(id);if(!a)return;var s=mk("span","bdg",a.icon);s.title=a.name;s.setAttribute("aria-label",a.name);box.appendChild(s)});
+}
+function nameEl(text,ids){var b=mk("b","",text),w=mk("span","bdgs");fillBadges(w,ids);if(w.childNodes.length)b.appendChild(w);return b}
+
+function buildCats(){
+  var box=$("achcats");if(box.childNodes.length)return;
+  ["all","play","variety","skill"].forEach(function(k){
+    var b=mk("button","ghost sm"+(k===achFilter?" on":""),CAT_LABEL[k]);
+    b.onclick=function(){achFilter=k;Array.prototype.forEach.call(box.childNodes,function(x,i){x.classList.toggle("on",["all","play","variety","skill"][i]===k)});renderAchievements()};
+    box.appendChild(b);
+  });
+}
+function renderAchievements(){
+  var total=achItems.length,earned=achItems.filter(function(x){return x.earned_at}).length,pct=total?Math.round(earned/total*100):0;
+  $("achcount").textContent=earned+" / "+total;$("achpct").textContent=pct+"%";
+  requestAnimationFrame(function(){$("achfill").style.width=pct+"%"});
+  $("achlogin").classList.toggle("hide",!!me);
+  var g=$("achgrid");g.textContent="";
+  achItems.filter(function(x){return achFilter==="all"||x.cat===achFilter}).forEach(function(x){
+    var done=!!x.earned_at,card=mk("div","acard "+(done?"done":"lock")),body=mk("div","abody");
+    card.appendChild(mk("div","aic",x.icon));
+    body.appendChild(mk("b","",x.name));body.appendChild(mk("p","",x.desc));
+    var bar=mk("div","achbar"),fill=mk("i");fill.style.width=(done?100:Math.max(0,Math.min(100,Math.round(x.cur/x.target*100))))+"%";bar.appendChild(fill);body.appendChild(bar);
+    var st=mk("div","astat");
+    if(done)st.textContent="✅ 획득 · "+fmtDay(x.earned_at);
+    else if(!me)st.textContent="🔒 로그인하면 진행률이 기록돼요";
+    else st.textContent="🔒 "+(x.cat==="skill"?(x.detail||"기록 없음"):Math.floor(x.cur)+" / "+x.target);
+    body.appendChild(st);card.appendChild(body);g.appendChild(card);
+  });
+}
+async function loadAchievements(skipClaim){
+  buildCats();
+  if(!achCat.length){try{achCat=chk(await sb.from("achievements").select("id,name,icon,description,category,sort").order("sort"))}catch(e){}}
+  if(!me){
+    achItems=achCat.map(function(a){return{id:a.id,name:a.name,icon:a.icon,desc:a.description,cat:a.category,cur:0,target:1,detail:"",earned_at:null}});
+    renderAchievements();return;
+  }
+  try{
+    achState=chk(await sb.rpc("my_achievements"));
+    achItems=achState.map(function(a){return{id:a.aid,name:a.aname,icon:a.aicon,desc:a.adesc,cat:a.acat,cur:Number(a.cur),target:Number(a.target),detail:a.detail,earned_at:a.earned_at}});
+    renderAchievements();
+    if(!skipClaim)claimNew();
+  }catch(e){$("achgrid").textContent="업적을 불러오지 못했어요."}
+}
+$("achlogbtn").onclick=openAuth;
+
+/* 축하 애니메이션 */
+function confetti(){
+  if(window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches)return;
+  var c=$("confetti"),x=c.getContext("2d");c.width=innerWidth;c.height=innerHeight;
+  var cols=["#00e5ff","#7b5cf5","#ff4fd8","#ffd93d","#2ecc9a"],ps=[],i;
+  for(i=0;i<90;i++)ps.push({x:innerWidth/2,y:innerHeight*0.38,vx:(Math.random()-.5)*15,vy:-Math.random()*14-4,r:Math.random()*5+3,c:cols[i%5],a:Math.random()*6,va:(Math.random()-.5)*.4});
+  var t0=performance.now();
+  (function step(now){
+    var dt=now-t0;x.clearRect(0,0,c.width,c.height);
+    ps.forEach(function(p){p.vy+=.35;p.x+=p.vx;p.y+=p.vy;p.a+=p.va;x.save();x.translate(p.x,p.y);x.rotate(p.a);x.fillStyle=p.c;x.globalAlpha=Math.max(0,1-dt/2600);x.fillRect(-p.r,-p.r/2,p.r*2,p.r);x.restore()});
+    if(dt<2600)requestAnimationFrame(step);else x.clearRect(0,0,c.width,c.height);
+  })(t0);
+}
+function celebrate(rows){rows.forEach(function(r){celebQ.push(r)});if(!celebBusy)nextCeleb()}
+function nextCeleb(){
+  var r=celebQ.shift();
+  if(!r){celebBusy=false;hide("celeb");return}
+  celebBusy=true;
+  $("cic").textContent=r.aicon;$("cname").textContent=r.aname;$("cdesc").textContent=r.adesc;
+  $("cmore").textContent=celebQ.length?"이어서 "+celebQ.length+"개의 업적이 더 있어요":"";
+  $("cok").textContent=celebQ.length?"다음":"확인";$("cskip").classList.toggle("hide",!celebQ.length);
+  var box=$("celeb").querySelector(".cbox");box.classList.remove("pop");void box.offsetWidth;box.classList.add("pop");
+  show("celeb");confetti();$("cok").focus();
+}
+function skipCeleb(){celebQ=[];celebBusy=false;hide("celeb")}
+$("cok").onclick=nextCeleb;$("cskip").onclick=skipCeleb;
+async function claimNew(){
+  if(!me||claiming)return;
+  claiming=true;
+  try{
+    var rows=chk(await sb.rpc("claim_new_achievements"));
+    if(rows&&rows.length){celebrate(rows);if(!$("achievements").classList.contains("hide"))loadAchievements(true)}
+  }catch(e){}
+  claiming=false;
+}
+
+/* 마이페이지: 내 업적 + 대표 배지 */
+async function loadMyAch(){
+  $("p3chips").textContent="불러오는 중...";$("p3err").textContent=$("p3ok").textContent="";
+  try{
+    achState=chk(await sb.rpc("my_achievements"));
+    var ids=achState.filter(function(a){return a.earned_at}).map(function(a){return a.aid});
+    pickBadges=(me.badges||[]).filter(function(id){return ids.indexOf(id)>=0});
+    renderPick();
+  }catch(e){$("p3chips").textContent="불러오지 못했어요."}
+}
+function renderPick(){
+  var items=achState.filter(function(a){return a.earned_at}),total=achState.length,box=$("p3chips");
+  $("p3sum").textContent="획득한 업적 "+items.length+" / "+total+" ("+(total?Math.round(items.length/total*100):0)+"%)";
+  box.textContent="";
+  if(!items.length){box.appendChild(mk("div","muted","아직 획득한 업적이 없어요. 게임을 플레이해 보세요!"));$("p3save").disabled=true;return}
+  $("p3save").disabled=false;
+  items.forEach(function(a){
+    var idx=pickBadges.indexOf(a.aid),b=mk("button","chipb"+(idx>=0?" on":""));
+    b.appendChild(mk("span","ci",a.aicon));b.appendChild(mk("span","cn",a.aname));
+    if(idx>=0)b.appendChild(mk("span","co",String(idx+1)));
+    b.title=a.adesc+" · 획득 "+fmtDay(a.earned_at);b.setAttribute("aria-pressed",idx>=0?"true":"false");
+    b.onclick=function(){
+      var i=pickBadges.indexOf(a.aid);
+      if(i>=0)pickBadges.splice(i,1);
+      else{if(pickBadges.length>=3){$("p3err").textContent="대표 배지는 최대 3개까지 고를 수 있어요.";return}pickBadges.push(a.aid)}
+      $("p3err").textContent=$("p3ok").textContent="";renderPick();
+    };
+    box.appendChild(b);
+  });
+}
+$("p3save").onclick=async function(){
+  $("p3err").textContent=$("p3ok").textContent="";
+  try{
+    chk(await sb.rpc("set_badges",{p_badges:pickBadges}));
+    me.badges=pickBadges.slice();fillBadges($("pbdg"),me.badges);$("p3ok").textContent="대표 배지를 저장했어요.";
+  }catch(e){$("p3err").textContent="저장하지 못했어요. "+((e&&e.message)||"")}
+};
+$("p3go").onclick=function(){hide("profm");location.hash="#/achievements"};
+
+/* 랭킹에서 다른 사람 눌렀을 때: 획득한 업적 */
+async function loadPlayerAch(uid){
+  var box=$("plach");box.textContent="";
+  try{
+    var rows=chk(await sb.rpc("player_achievements",{p_user:uid}));
+    if(uid!==curPlayer)return;
+    box.appendChild(mk("div","plh","🎖️ 획득한 업적 "+rows.length+(achCat.length?" / "+achCat.length:"")));
+    var w=mk("div","chips");
+    if(!rows.length)w.appendChild(mk("span","muted","아직 획득한 업적이 없어요"));
+    rows.forEach(function(r){
+      var a=achInfo(r.aid);if(!a)return;
+      var c=mk("span","chipa");c.appendChild(mk("span","ci",a.icon));c.appendChild(mk("span","cn",a.name));
+      c.title=a.description+" · 획득 "+fmtDay(r.earned_at);w.appendChild(c);
+    });
+    box.appendChild(w);
+  }catch(e){}
+}
 
 /* ================= 공지 ================= */
 function renderNotices(){
@@ -1008,6 +1230,7 @@ async function refresh(){
   try{
     apps=chk(await sb.from("game_apps").select("*").order("position").order("created_at")).map(mapApp);
     notices=chk(await sb.from("game_notices").select("*")).map(function(r){return{id:r.id,date:r.date,title:r.title,body:r.body,ts:Date.parse(r.created_at)}});
+    try{achCat=chk(await sb.from("achievements").select("id,name,icon,description,category,sort").order("sort"))}catch(x){}
     renderHome();renderNotices();
     if(!$("inquiry").classList.contains("hide"))renderInquiry();
     if(isAdmin&&adminOk){if(editing<0)renderAdmin();renderNoticeAdmin();renderInq()}
@@ -1024,7 +1247,7 @@ $("rgo").onclick=async function(){
 function rtabs0(){refresh().then(function(){fillGames();rtabs()})}
 function route(){
   var h=location.hash;
-  ["home","notice","inquiry","ranking","reauth","admin"].forEach(hide);
+  ["home","notice","inquiry","ranking","achievements","reauth","admin"].forEach(hide);
   clearInterval(timer);timer=null;
   if(h==="#/admin"){
     if(!isAdmin){location.hash="#/";return}
@@ -1034,6 +1257,7 @@ function route(){
     }else{show("reauth");$("rpw").value="";$("rerr").textContent=""}
   }else if(h==="#/notice"){show("notice");renderNotices();refresh()}
   else if(h==="#/ranking"){show("ranking");rtabs0()}
+  else if(h==="#/achievements"){show("achievements");loadAchievements()}
   else if(h==="#/inquiry"){show("inquiry");selApp=null;renderInquiry();refresh()}
   else{show("home");refresh()}
   window.scrollTo(0,0);
