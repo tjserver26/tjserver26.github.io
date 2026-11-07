@@ -183,6 +183,56 @@ button.chipb{background:var(--tile);color:var(--ink)}
 .cn{font-size:22px;font-weight:900}
 .cd{color:var(--sub);margin:6px 0 14px;font-size:14px;word-break:keep-all}
 @media (prefers-reduced-motion:reduce){.cbox.pop,.cic{animation:none}.achbar i{transition:none}}
+.tabs{flex-wrap:wrap}
+.lvchip{display:inline-flex;flex-direction:column;align-items:stretch;gap:3px;padding:5px 12px 6px;min-width:64px;cursor:pointer}
+.lvchip .lvn{font-family:Orbitron,sans-serif;font-weight:900;font-size:13px;line-height:1;text-align:center;color:var(--neon)}
+.lvchip .lvn b{font-size:15px;color:#fff}
+.lvchip .lvb{display:block;height:4px;border-radius:99px;background:#0e0c22;overflow:hidden}
+.lvchip .lvb i{display:block;height:100%;width:0;background:linear-gradient(90deg,#00e5ff,#ff4fd8);transition:width .6s}
+.lvtag{display:inline-block;font-family:Orbitron,sans-serif;font-weight:900;font-size:11px;letter-spacing:.5px;padding:2px 8px;border-radius:8px;vertical-align:middle;line-height:1.5}
+.lvtag.t0{background:#9db4ff;color:#0a0918}.lvtag.t1{background:#2ecc9a;color:#04261c}.lvtag.t2{background:#00e5ff;color:#02222a}
+.lvtag.t3{background:#8b6dff;color:#fff}.lvtag.t4{background:#ff4fd8;color:#fff}.lvtag.t5{background:linear-gradient(135deg,#ffb020,#ff5d73);color:#1a0b00}
+.lvtag.t6{background:linear-gradient(90deg,#00e5ff,#7b5cf5,#ff4fd8,#ffd93d,#00e5ff);background-size:200% 100%;animation:lvshift 3s linear infinite;color:#fff}
+@keyframes lvshift{to{background-position:200% 0}}
+.tx b .lvtag{display:inline-block;margin:0 0 0 8px;font-size:11px}
+.lvline{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:2px 0 4px;font-size:13px;color:var(--sub)}
+.lvstrip{padding:12px 14px;margin:0 0 14px;border-radius:12px;background:var(--tile);border:1px solid var(--line);cursor:pointer}
+.lvstrip:hover{border-color:var(--neon)}
+.lvsl{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+.achbar.thin{height:6px}.achbar.big{height:14px}
+.lvcard{padding:18px;border-radius:14px;margin-bottom:6px;background:radial-gradient(circle at 20% 0,rgba(123,92,245,.28),transparent 60%),var(--tile);border:1px solid rgba(0,229,255,.35)}
+.lvtop{display:flex;align-items:center;gap:16px;margin-bottom:14px}
+.lvbig{font-family:Orbitron,sans-serif;font-weight:900;font-size:20px;color:var(--neon)}
+.lvbig b{font-size:46px;line-height:1;margin-left:2px;background:linear-gradient(135deg,#00e5ff,#ff4fd8);-webkit-background-clip:text;background-clip:text;color:transparent}
+.lvtitle{font-size:20px;font-weight:900}
+.lvrow{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:8px;font-size:13px;color:var(--sub)}
+.lvrow b{color:var(--neon)}
+.sech{margin:20px 0 8px;font-family:Orbitron,"Noto Sans KR",sans-serif;font-size:12px;letter-spacing:2px;color:var(--neon);font-weight:700}
+.titles{display:grid;gap:8px}
+.trow{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:12px;background:var(--tile);border:1px solid var(--line);opacity:.62}
+.trow.on{opacity:1;border-color:var(--neon);box-shadow:0 0 14px rgba(0,229,255,.3)}
+.trow.got{opacity:1}
+.trow .ti{font-size:22px;width:30px;text-align:center}
+.trow b{flex:1}.trow span{font-size:12px;color:var(--sub);font-family:Orbitron,sans-serif}
+.rules{white-space:pre-line;line-height:1.7;font-size:13px}
+#xptoast{position:fixed;top:calc(14px + env(safe-area-inset-top,0px));left:50%;transform:translate(-50%,-160%);z-index:80;width:min(92vw,360px);padding:12px 16px;border-radius:16px;text-align:center;background:linear-gradient(var(--card),var(--card)) padding-box,linear-gradient(135deg,#00e5ff,#ff4fd8) border-box;border:2px solid transparent;box-shadow:0 8px 40px rgba(123,92,245,.55);transition:transform .45s cubic-bezier(.2,1.2,.4,1);pointer-events:none}
+#xptoast.show{transform:translate(-50%,0)}
+.xt-amt{font-family:Orbitron,sans-serif;font-weight:900;font-size:26px;background:linear-gradient(90deg,#00e5ff,#ff4fd8);-webkit-background-clip:text;background-clip:text;color:transparent}
+.xt-line{font-size:12.5px;color:var(--sub);margin-top:3px;word-break:keep-all}
+#lvup{z-index:65;background:rgba(5,4,15,.9)}
+#lvconf{position:fixed;inset:0;width:100%;height:100%;pointer-events:none}
+.lvbox{position:relative;text-align:center;overflow:hidden;padding:34px 26px 24px;max-width:360px;width:100%;border-radius:22px;background:radial-gradient(circle at 50% 28%,rgba(123,92,245,.4),var(--card) 68%);border:1px solid rgba(255,79,216,.65);box-shadow:0 0 90px rgba(255,79,216,.45),0 0 40px rgba(0,229,255,.35);animation:cpop .6s cubic-bezier(.2,1.3,.4,1)}
+.rings{position:absolute;left:50%;top:120px;width:0;height:0;pointer-events:none}
+.rings i{pointer-events:none}
+.lvbox button{position:relative;z-index:2}
+.rings i{position:absolute;left:-70px;top:-70px;width:140px;height:140px;border-radius:50%;border:3px solid rgba(0,229,255,.85);opacity:0;animation:ring 1.8s ease-out infinite}
+.rings i:nth-child(2){animation-delay:.6s;border-color:rgba(255,79,216,.85)}.rings i:nth-child(3){animation-delay:1.2s;border-color:rgba(139,109,255,.95)}
+@keyframes ring{0%{transform:scale(.3);opacity:.95}100%{transform:scale(2.8);opacity:0}}
+.lvl{position:relative;font-family:Orbitron,sans-serif;font-weight:900;letter-spacing:5px;color:#ffd93d;font-size:15px;text-shadow:0 0 14px rgba(255,217,61,.7)}
+.lvupnum{position:relative;font-family:Orbitron,sans-serif;font-weight:900;font-size:80px;line-height:1.1;margin:8px 0 4px;background:linear-gradient(135deg,#00e5ff,#ff4fd8);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 0 18px rgba(0,229,255,.6));animation:lvpop .9s cubic-bezier(.2,1.5,.4,1)}
+@keyframes lvpop{0%{transform:scale(.2) rotate(-8deg);opacity:0}100%{transform:scale(1) rotate(0);opacity:1}}
+.lvtt{position:relative;font-size:20px;font-weight:900;margin-bottom:4px}
+@media (prefers-reduced-motion:reduce){.rings i,.lvupnum,.lvbox,.lvtag.t6{animation:none}#xptoast{transition:none}}
 </style>
 </head>
 <body>
@@ -191,6 +241,7 @@ button.chipb{background:var(--tile);color:var(--ink)}
   <div class="top"><div class="logo">TJ</div>
     <div class="links">
       <button class="adminlink" id="loginbtn">로그인</button>
+      <button class="adminlink lvchip hide" id="lvchip" aria-label="내 레벨"><span class="lvn">LV.<b id="lvnum">1</b></span><span class="lvb"><i id="lvfill"></i></span></button>
       <button class="adminlink hide" id="usericon" aria-label="내 정보"></button>
       <a class="adminlink hide" id="adminlink" href="#/admin">어드민</a>
     </div>
@@ -333,8 +384,12 @@ button.chipb{background:var(--tile);color:var(--ink)}
 <div id="profm" class="modal hide" role="dialog" aria-modal="true">
   <div class="mbox wide">
     <button class="x" id="profx" aria-label="닫기">✕</button>
-    <div class="tabs"><button class="ghost on" id="tab1">내 정보</button><button class="ghost" id="tab2">게임 기록</button><button class="ghost" id="tab3">업적</button></div>
+    <div class="tabs"><button class="ghost on" id="tab1">내 정보</button><button class="ghost" id="tab2">게임 기록</button><button class="ghost" id="tab3">업적</button><button class="ghost" id="tab4">레벨</button></div>
     <div id="p1">
+      <div class="lvstrip hide" id="plvstrip" role="button" tabindex="0" title="레벨 자세히 보기">
+        <div class="lvsl"><span class="lvtag" id="plvtag"></span><b id="plvtitle2"></b><span class="muted" id="plvsub2"></span></div>
+        <div class="achbar thin"><i id="plvfill2"></i></div>
+      </div>
       <div class="avrow">
         <div class="av" id="pav"></div>
         <div><input type="file" id="pfile" accept="image/*" class="hide">
@@ -364,6 +419,19 @@ button.chipb{background:var(--tile);color:var(--ink)}
       <button class="full" id="p3save">대표 배지 저장</button>
       <button class="ghost full" id="p3go" style="margin-top:8px">🎖️ 업적 페이지 보기</button>
     </div>
+    <div id="p4" class="hide">
+      <div class="lvcard">
+        <div class="lvtop"><div class="lvbig">LV.<b id="p4lv">1</b></div><div><div class="lvtitle" id="p4title"></div><div class="muted" id="p4xp"></div></div></div>
+        <div class="achbar big"><i id="p4fill"></i></div>
+        <div class="lvrow"><span id="p4into"></span><b id="p4need"></b></div>
+      </div>
+      <div class="sech">칭호</div>
+      <div class="titles" id="p4titles"></div>
+      <div class="sech">XP 얻는 법</div>
+      <div class="muted rules" id="p4rules"></div>
+      <div class="sech">최근 획득 XP</div>
+      <div class="list" id="p4hist"></div>
+    </div>
   </div>
 </div>
 
@@ -380,7 +448,7 @@ button.chipb{background:var(--tile);color:var(--ink)}
 <div id="plm" class="modal hide" role="dialog" aria-modal="true">
   <div class="mbox wide">
     <button class="x" id="plx" aria-label="닫기">✕</button>
-    <div class="avrow"><div class="av" id="plav"></div><div><h2 class="mt" id="plname"></h2><div class="bdgs" id="plbdg"></div><div class="muted" id="plsub"></div></div></div>
+    <div class="avrow"><div class="av" id="plav"></div><div><h2 class="mt" id="plname"></h2><div class="lvline" id="pllv"></div><div class="bdgs" id="plbdg"></div><div class="muted" id="plsub"></div></div></div>
     <div id="plach" style="margin-top:14px"></div>
     <div class="seasonbar" style="margin-top:16px"><button class="ghost sm" id="plprev" aria-label="이전 달">◀</button><b id="pllabel"></b><span class="badge" id="plpill"></span><button class="ghost sm" id="plnext" aria-label="다음 달">▶</button><button class="ghost sm" id="plall">전체 기간</button></div>
     <div class="list" id="pllist"></div>
@@ -398,6 +466,20 @@ button.chipb{background:var(--tile);color:var(--ink)}
     <div class="muted" id="cmore" style="margin-bottom:10px"></div>
     <button class="full" id="cok">확인</button>
     <button class="ghost full sm hide" id="cskip" style="margin-top:8px">모두 닫기</button>
+  </div>
+</div>
+
+<!-- XP 알림 / 레벨업 -->
+<div id="xptoast" role="status" aria-live="polite"></div>
+<div id="lvup" class="modal hide" role="dialog" aria-modal="true" aria-live="assertive">
+  <canvas id="lvconf"></canvas>
+  <div class="lvbox">
+    <div class="rings"><i></i><i></i><i></i></div>
+    <div class="lvl">LEVEL UP!</div>
+    <div class="lvupnum" id="lvupnum"></div>
+    <div class="lvtt" id="lvuptitle"></div>
+    <div class="muted" id="lvupsub" style="min-height:20px"></div>
+    <button class="full" id="lvupok" style="margin-top:14px">확인</button>
   </div>
 </div>
 
@@ -481,7 +563,7 @@ async function loadMe(){
     }
   }catch(e){}
   renderTop();
-  if(me)claimNew();
+  if(me)claimAll();else renderLevel();
 }
 function openAuth(){
   show("lview");hide("rview");$("lerr0").textContent=$("rerr0").textContent="";
@@ -520,7 +602,7 @@ $("doreg").onclick=async function(){
   closeAuth();
 };
 document.addEventListener("keydown",function(e){
-  if(e.key==="Escape"){if(!$("celeb").classList.contains("hide"))skipCeleb();["authm","profm","recm","plm"].forEach(hide);if(playing)closeGame()}
+  if(e.key==="Escape"){if(!$("lvup").classList.contains("hide"))hide("lvup");if(!$("celeb").classList.contains("hide"))skipCeleb();["authm","profm","recm","plm"].forEach(hide);if(playing)closeGame()}
   if(e.key==="Enter"){
     if(!$("authm").classList.contains("hide")){($("rview").classList.contains("hide")?$("dologin"):$("doreg")).click()}
     else if(!$("reauth").classList.contains("hide"))$("rgo").click();
@@ -533,19 +615,20 @@ function openProfile(){
   if(!me)return;
   pendingAvatar=null;
   setAv($("pav"),me.avatar,me.nickname);
-  $("pid").textContent="아이디: "+me.username;fillBadges($("pbdg"),me.badges);
+  $("pid").textContent="아이디: "+me.username;fillBadges($("pbdg"),me.badges);renderLevel();
   $("pnick").value=me.nickname;$("pn1").value=$("pn2").value="";
   $("perr").textContent=$("pok").textContent="";
   tab(1);show("profm");
 }
 function tab(n){
-  [1,2,3].forEach(function(i){$("tab"+i).classList.toggle("on",n===i);$("p"+i).classList.toggle("hide",n!==i)});
+  [1,2,3,4].forEach(function(i){$("tab"+i).classList.toggle("on",n===i);$("p"+i).classList.toggle("hide",n!==i)});
   if(n===2)loadMyRecs();
   if(n===3)loadMyAch();
+  if(n===4)loadXpTab();
 }
 $("usericon").onclick=openProfile;
 $("profx").onclick=function(){hide("profm")};
-$("tab1").onclick=function(){tab(1)};$("tab2").onclick=function(){tab(2)};$("tab3").onclick=function(){tab(3)};
+$("tab1").onclick=function(){tab(1)};$("tab2").onclick=function(){tab(2)};$("tab3").onclick=function(){tab(3)};$("tab4").onclick=function(){tab(4)};
 $("pchoose").onclick=function(){$("pfile").click()};
 $("pdel").onclick=function(){pendingAvatar="";setAv($("pav"),"",$("pnick").value||me.nickname)};
 $("pfile").onchange=function(){
@@ -581,7 +664,7 @@ $("psave").onclick=async function(){
   $("pn1").value=$("pn2").value="";renderTop();$("pok").textContent="저장했어요.";
 };
 $("plogout").onclick=async function(){
-  await sb.auth.signOut();me=null;isAdmin=false;adminOk=false;achState=[];hide("profm");renderTop();
+  await sb.auth.signOut();me=null;isAdmin=false;adminOk=false;achState=[];xpState=null;renderLevel();hide("profm");renderTop();
   if(location.hash==="#/admin")location.hash="#/";else route();
 };
 function recRow(r,onDel){
@@ -679,7 +762,7 @@ var curPlayer=null;
 function openPlayer(uid){
   if(!uid)return;
   curPlayer=uid;seasons.pl=seasons.rk;paints.pl();
-  setAv($("plav"),"","?");$("plname").textContent="";$("plsub").textContent="";$("plbdg").textContent="";$("plach").textContent="";
+  setAv($("plav"),"","?");$("plname").textContent="";$("plsub").textContent="";$("plbdg").textContent="";$("plach").textContent="";$("pllv").textContent="";
   $("pllist").textContent="불러오는 중...";show("plm");loadPlayer();
 }
 async function loadPlayer(){
@@ -690,6 +773,7 @@ async function loadPlayer(){
     if(!prof.length){$("pllist").textContent="";$("pllist").appendChild(mk("div","muted","플레이어 정보를 찾을 수 없어요."));return}
     var p=prof[0];
     setAv($("plav"),p.avatar,p.nickname);$("plname").textContent=p.nickname+(p.is_me?" (나)":"");fillBadges($("plbdg"),p.badges);loadPlayerAch(uid);
+    if(p.level){var ll=$("pllv");ll.textContent="";ll.appendChild(lvTag(p.level));ll.appendChild(mk("span","",(p.title||titleOf(p.level))+" · "+Number(p.xp||0).toLocaleString()+" XP"))}
     var ov=chk(await sb.rpc("player_overall",{p_user:uid,p_season:seasons.pl}));
     var rows=chk(await sb.rpc("player_game_summary",{p_user:uid,p_season:seasons.pl}));
     if(uid!==curPlayer)return;
@@ -726,7 +810,7 @@ async function loadRanking(){
       rows.forEach(function(r){
         var row=clickable(mk("div","row rkrow"+(r.is_me?" me":"")),r.uid),tx=mk("div","tx");
         row.appendChild(mk("div","rkno",medal(Number(r.rnk))));
-        tx.appendChild(nameEl(r.nickname+(r.is_me?" (나)":""),r.badges));tx.appendChild(mk("span","",r.games_played+"개 게임"));
+        tx.appendChild(nameEl(r.nickname+(r.is_me?" (나)":""),r.badges,r.level));tx.appendChild(mk("span","",r.games_played+"개 게임"));
         row.appendChild(tx);row.appendChild(mk("div","pts",Number(r.points).toLocaleString()+" P"));box.appendChild(row);
       });
     }catch(e){box.textContent="랭킹을 불러오지 못했어요."}
@@ -740,7 +824,7 @@ async function loadRanking(){
       rs.forEach(function(r){
         var row=clickable(mk("div","row rkrow"+(r.is_me?" me":"")),r.uid),tx=mk("div","tx"),sc=Number(r.best_score),gd=r.grade||gradeOf(app&&app.g,mode,sc,app&&app.o);
         row.appendChild(mk("div","rkno",medal(Number(r.rnk))));
-        tx.appendChild(nameEl(r.nickname+(r.is_me?" (나)":""),r.badges));tx.appendChild(mk("span","",fmtScore(app,sc)));
+        tx.appendChild(nameEl(r.nickname+(r.is_me?" (나)":""),r.badges,r.level));tx.appendChild(mk("span","",fmtScore(app,sc)));
         row.appendChild(tx);if(gd)row.appendChild(mk("div","gr g"+gd,gd));b2.appendChild(row);
       });
     }catch(e){b2.textContent="랭킹을 불러오지 못했어요."}
@@ -785,7 +869,7 @@ function saveScore(r){
   sb.from("game_records").insert({user_id:me.id,game_id:app.id,game_name:app.n,kind:"score",score:sc,mode:mode,grade:grade,data:data})
     .then(function(res){
       var gd=grade||gradeOf(app.g,mode,sc,app.o);
-      if(!res.error)claimNew();
+      if(!res.error)claimAll();
       $("pstat").textContent=res.error?"기록 저장 실패":"기록 저장됨 ✓ "+fmtScore(app,sc)+(gd?" · "+gd+"등급":"");
     });
 }
@@ -863,7 +947,7 @@ function fillBadges(box,ids){
   box.textContent="";
   (ids||[]).forEach(function(id){var a=achInfo(id);if(!a)return;var s=mk("span","bdg",a.icon);s.title=a.name;s.setAttribute("aria-label",a.name);box.appendChild(s)});
 }
-function nameEl(text,ids){var b=mk("b","",text),w=mk("span","bdgs");fillBadges(w,ids);if(w.childNodes.length)b.appendChild(w);return b}
+function nameEl(text,ids,level){var b=mk("b","",text),w=mk("span","bdgs");if(level)b.appendChild(lvTag(level));fillBadges(w,ids);if(w.childNodes.length)b.appendChild(w);return b}
 
 function buildCats(){
   var box=$("achcats");if(box.childNodes.length)return;
@@ -908,11 +992,11 @@ async function loadAchievements(skipClaim){
 $("achlogbtn").onclick=openAuth;
 
 /* 축하 애니메이션 */
-function confetti(){
+function confetti(cid){
   if(window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches)return;
-  var c=$("confetti"),x=c.getContext("2d");c.width=innerWidth;c.height=innerHeight;
+  var c=$(cid||"confetti"),x=c.getContext("2d");c.width=innerWidth;c.height=innerHeight;
   var cols=["#00e5ff","#7b5cf5","#ff4fd8","#ffd93d","#2ecc9a"],ps=[],i;
-  for(i=0;i<90;i++)ps.push({x:innerWidth/2,y:innerHeight*0.38,vx:(Math.random()-.5)*15,vy:-Math.random()*14-4,r:Math.random()*5+3,c:cols[i%5],a:Math.random()*6,va:(Math.random()-.5)*.4});
+  for(i=0;i<(cid==="lvconf"?170:90);i++)ps.push({x:innerWidth/2,y:innerHeight*0.38,vx:(Math.random()-.5)*15,vy:-Math.random()*14-4,r:Math.random()*5+3,c:cols[i%5],a:Math.random()*6,va:(Math.random()-.5)*.4});
   var t0=performance.now();
   (function step(now){
     var dt=now-t0;x.clearRect(0,0,c.width,c.height);
@@ -923,7 +1007,7 @@ function confetti(){
 function celebrate(rows){rows.forEach(function(r){celebQ.push(r)});if(!celebBusy)nextCeleb()}
 function nextCeleb(){
   var r=celebQ.shift();
-  if(!r){celebBusy=false;hide("celeb");return}
+  if(!r){celebBusy=false;hide("celeb");if(pendingLevel)showLevelUp();return}
   celebBusy=true;
   $("cic").textContent=r.aicon;$("cname").textContent=r.aname;$("cdesc").textContent=r.adesc;
   $("cmore").textContent=celebQ.length?"이어서 "+celebQ.length+"개의 업적이 더 있어요":"";
@@ -931,7 +1015,7 @@ function nextCeleb(){
   var box=$("celeb").querySelector(".cbox");box.classList.remove("pop");void box.offsetWidth;box.classList.add("pop");
   show("celeb");confetti();$("cok").focus();
 }
-function skipCeleb(){celebQ=[];celebBusy=false;hide("celeb")}
+function skipCeleb(){celebQ=[];celebBusy=false;hide("celeb");if(pendingLevel)showLevelUp()}
 $("cok").onclick=nextCeleb;$("cskip").onclick=skipCeleb;
 async function claimNew(){
   if(!me||claiming)return;
@@ -999,6 +1083,128 @@ async function loadPlayerAch(uid){
     box.appendChild(w);
   }catch(e){}
 }
+
+/* ================= 레벨 / 경험치 ================= */
+var xpState=null,lvTitles=[],pendingLevel=null,toastTimer=null,xpCfg=null;
+var TIER_MIN=[1,10,20,40,60,80,100];
+function tierOf(lv){
+  var src=lvTitles.length?lvTitles.map(function(x){return x.min_level}):TIER_MIN,k=0;
+  for(var i=0;i<src.length;i++)if(lv>=src[i])k=i;
+  return Math.min(6,k);
+}
+function titleOf(lv){var f=lvTitles.filter(function(x){return x.min_level<=lv});return f.length?f[f.length-1].title:""}
+function lvTag(lv){return mk("span","lvtag t"+tierOf(lv),"LV."+lv)}
+function xpInto(){
+  var s=xpState;if(!s)return{into:0,need:0,pct:0,max:true};
+  if(s.nextXp===null)return{into:s.xp-s.levelXp,need:0,pct:100,max:true};
+  var need=s.nextXp-s.levelXp,into=s.xp-s.levelXp;
+  return{into:into,need:need,pct:Math.max(0,Math.min(100,Math.round(into/need*100))),max:false};
+}
+async function loadXp(){
+  if(!me){xpState=null;renderLevel();return}
+  try{
+    var r=chk(await sb.rpc("my_xp"));
+    if(r&&r.length){var x=r[0];xpState={xp:Number(x.xp),level:x.level,title:x.title,levelXp:Number(x.level_xp),nextXp:x.next_xp===null?null:Number(x.next_xp),nextTitle:x.next_title,nextTitleLevel:x.next_title_level}}
+  }catch(e){}
+  renderLevel();
+}
+function renderLevel(){
+  var chip=$("lvchip"),strip=$("plvstrip");
+  if(!me||!xpState){chip.classList.add("hide");strip.classList.add("hide");return}
+  var q=xpInto(),s=xpState,left=q.need-q.into;
+  chip.classList.remove("hide");$("lvnum").textContent=s.level;$("lvfill").style.width=q.pct+"%";
+  chip.title="LV."+s.level+" "+s.title+" · "+(q.max?"최고 레벨":"다음 레벨까지 "+left.toLocaleString()+" XP");
+  strip.classList.remove("hide");
+  var tg=$("plvtag");tg.className="lvtag t"+tierOf(s.level);tg.textContent="LV."+s.level;
+  $("plvtitle2").textContent=s.title;
+  $("plvsub2").textContent=q.max?"최고 레벨":"다음 레벨까지 "+left.toLocaleString()+" XP";
+  $("plvfill2").style.width=q.pct+"%";
+  if(!$("p4").classList.contains("hide"))renderXpTab();
+}
+$("lvchip").onclick=function(){openProfile();tab(4)};
+$("plvstrip").onclick=function(){tab(4)};
+$("plvstrip").onkeydown=function(e){if(e.key==="Enter")tab(4)};
+
+function renderXpTab(){
+  var s=xpState;if(!s)return;
+  var q=xpInto(),left=q.need-q.into;
+  $("p4lv").textContent=s.level;$("p4title").textContent=s.title;$("p4fill").style.width=q.pct+"%";
+  $("p4xp").textContent="누적 "+s.xp.toLocaleString()+" XP";
+  $("p4into").textContent=q.max?"최고 레벨에 도달했어요!":q.into.toLocaleString()+" / "+q.need.toLocaleString()+" XP ("+q.pct+"%)";
+  $("p4need").textContent=q.max?"":"다음 레벨까지 "+left.toLocaleString()+" XP";
+  var box=$("p4titles");box.textContent="";
+  lvTitles.forEach(function(t,i){
+    var nxt=lvTitles[i+1],hi=nxt?nxt.min_level-1:t.min_level;
+    var cur=s.level>=t.min_level&&(!nxt||s.level<nxt.min_level);
+    var row=mk("div","trow"+(cur?" on":(s.level>t.min_level?" got":"")));
+    row.appendChild(mk("div","ti",t.icon||"🏅"));row.appendChild(mk("b","",t.title));
+    row.appendChild(mk("span","","LV."+t.min_level+(hi>t.min_level?"~"+hi:"")));
+    if(cur)row.appendChild(mk("span","","◀ 현재"));
+    box.appendChild(row);
+  });
+}
+async function loadXpTab(){
+  if(!me)return;
+  await loadXp();renderXpTab();
+  try{
+    if(!xpCfg){xpCfg={};chk(await sb.from("xp_config").select("*")).forEach(function(r){xpCfg[r.key]=r.value})}
+    var c=xpCfg;
+    $("p4rules").textContent="• 게임을 끝까지 하면 기본 "+c.base+" XP\n• 성적 보너스: S +"+c.bonus_S+" · A +"+c.bonus_A+" · B +"+c.bonus_B+" · C +"+c.bonus_C+" · D +"+c.bonus_D+"\n• 업적을 달성하면 업적마다 보너스 XP\n• 하루에 게임으로 받을 수 있는 XP는 최대 "+c.daily_cap+" XP\n• 이전 기록과 "+c.min_gap_sec+"초 이상 간격이 있어야 XP가 지급돼요";
+  }catch(e){}
+  try{
+    var h=chk(await sb.from("xp_events").select("amount,source,meta,occurred_at").order("occurred_at",{ascending:false}).limit(12)),box=$("p4hist");
+    box.textContent="";
+    if(!h.length)box.appendChild(mk("div","muted","아직 받은 XP가 없어요. 게임을 끝까지 해 보세요!"));
+    h.forEach(function(e){
+      var m=e.meta||{},row=mk("div","row mrow"),tx=mk("div","tx");
+      var name=e.source==="game"?(m.game||"게임")+(m.grade?" · "+m.grade+"등급":""):e.source==="achievement"?(m.icon||"🎖️")+" 업적 · "+(m.name||""):"보너스";
+      tx.appendChild(mk("b","",name));
+      var sub=fmt(e.occurred_at);if(m.reason==="cooldown")sub+=" · 연속 기록이라 XP 없음";else if(m.reason==="daily_cap")sub+=" · 하루 한도";
+      tx.appendChild(mk("span","",sub));row.appendChild(tx);row.appendChild(mk("div","pts","+"+e.amount+" XP"));box.appendChild(row);
+    });
+  }catch(e){}
+}
+
+function showXpToast(rows){
+  var total=0,lines=[];
+  rows.forEach(function(r){
+    var a=Number(r.ev_amount),m=r.ev_meta||{};total+=a;
+    if(r.ev_source==="game"){
+      if(m.reason==="cooldown")lines.push("연속으로 끝낸 게임이라 XP가 지급되지 않았어요");
+      else{
+        var s=(m.game||"게임")+(m.grade?" "+m.grade+"등급":"")+" +"+a+" XP";
+        if(Number(m.bonus)>0&&a>0)s+=" (기본 "+m.base+" + 성적 "+m.bonus+")";
+        if(m.reason==="daily_cap")s+=" · 오늘의 XP 한도에 도달했어요";
+        lines.push(s);
+      }
+    }else if(r.ev_source==="achievement")lines.push((m.icon||"🎖️")+" "+(m.name||"업적")+" 보너스 +"+a+" XP");
+    else lines.push("+"+a+" XP");
+  });
+  var t=$("xptoast");t.textContent="";
+  t.appendChild(mk("div","xt-amt",total>0?"+"+total.toLocaleString()+" XP":"XP 없음"));
+  lines.slice(0,3).forEach(function(l){t.appendChild(mk("div","xt-line",l))});
+  if(lines.length>3)t.appendChild(mk("div","xt-line","외 "+(lines.length-3)+"건"));
+  t.classList.add("show");clearTimeout(toastTimer);toastTimer=setTimeout(function(){t.classList.remove("show")},5200);
+  if(playing&&total>0)$("pstat").textContent=$("pstat").textContent.replace(/ · \+[\d,]+ XP$/,"")+" · +"+total.toLocaleString()+" XP";
+}
+function showLevelUp(){
+  var p=pendingLevel;if(!p)return;pendingLevel=null;
+  $("lvupnum").textContent="LV."+p.lv;$("lvuptitle").textContent=p.lv_title||titleOf(p.lv);
+  $("lvupsub").textContent=titleOf(p.lv_from)!==(p.lv_title||titleOf(p.lv))?"🎉 새 칭호를 얻었어요!":"";
+  show("lvup");confetti("lvconf");$("lvupok").focus();
+}
+$("lvupok").onclick=function(){hide("lvup")};
+async function claimXp(){
+  if(!me)return;
+  try{
+    var rows=chk(await sb.rpc("claim_xp_events"));
+    if(rows&&rows.length)showXpToast(rows);
+    await loadXp();
+    var lv=chk(await sb.rpc("claim_levelup"));
+    if(lv&&lv.length){pendingLevel=lv[0];if($("celeb").classList.contains("hide"))showLevelUp()}
+  }catch(e){}
+}
+async function claimAll(){await claimNew();await claimXp()}
 
 /* ================= 공지 ================= */
 function renderNotices(){
@@ -1231,6 +1437,7 @@ async function refresh(){
     apps=chk(await sb.from("game_apps").select("*").order("position").order("created_at")).map(mapApp);
     notices=chk(await sb.from("game_notices").select("*")).map(function(r){return{id:r.id,date:r.date,title:r.title,body:r.body,ts:Date.parse(r.created_at)}});
     try{achCat=chk(await sb.from("achievements").select("id,name,icon,description,category,sort").order("sort"))}catch(x){}
+    try{lvTitles=chk(await sb.from("level_titles").select("*").order("min_level"))}catch(x){}
     renderHome();renderNotices();
     if(!$("inquiry").classList.contains("hide"))renderInquiry();
     if(isAdmin&&adminOk){if(editing<0)renderAdmin();renderNoticeAdmin();renderInq()}
